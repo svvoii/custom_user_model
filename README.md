@@ -4,6 +4,14 @@
 
 Assuming `Python` and `pipen` are installed.
 
+**NOTE**: We can use the following command to save the requirements of the project to a file  
+
+```bash
+pip freeze > requirements.txt
+```
+
+*This will save all the packages installed in the project to a file named `requirements.txt`*  
+
 1. Creating new directory for the project and install Django with pipenv
 
 ```bash
@@ -187,10 +195,274 @@ AUTHENTICATION_BACKENDS = [
 
 *This will allow us to authenticate the user if the email or username is entered in any case*  
 
-**NOTE**: We can use the following command to save the requirements of the project to a file  
+## Adding some Templates
+
+1. Creating new app to handle the home page
 
 ```bash
-pip freeze > requirements.txt
+python manage.py startapp homepage
 ```
 
-*This will save all the packages installed in the project to a file named `requirements.txt`*  
+2. Adding the `homepage` app to the `INSTALLED_APPS` list in the `main/settings.py` file:
+
+```python
+INSTALLED_APPS = [
+	'homepage',
+	...
+]
+```
+
+3. Create a new directory named `templates` at the same level as `account` app directory  
+
+```bash
+mkdir templates
+```
+
+4. Create new directories named `homepage/templates` and `homepage/templates/homepage`: 
+
+```bash
+mkdir homepage/templates
+mkdir homepage/templates/homepage
+``` 
+*This will contain the templates for the homepage app*
+
+5. Add the `templates` directory to the `DIRS` list in the `main/settings.py` file  
+
+```python
+# Adding the following include to use `os` module.
+import os
+...
+
+TEMPLATES = [
+	{
+		...
+		'DIRS': [os.path.join(BASE_DIR, 'templates')],
+		...
+	}
+]
+...
+```
+
+*This will allow Django to look for templates in the main `templates` directory as well as `templates` in the app directories*  
+
+6. Create a `layout.html` file in the main `templates` directory:
+
+```html
+<!DOCTYPE html>
+<html lang=en>
+
+<head>
+    <meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+</head>
+
+<body>
+	<div>
+		{% block content %}
+		{% endblock content %}
+	</div>
+</body>
+
+</html>
+
+```
+
+7. Create a `home.html` file in the `homepage/templates/homepage` directory:
+
+```html
+{% extends 'layout.html' %}
+
+{% block content %}
+	<h1>Welcome to the homepage</h1>
+{% endblock content %}
+```
+
+6. Adding `home_view` function to the `homepage/views.py` file:
+
+```python
+from django.shortcuts import render
+
+def home_view(request, *args, **kwargs):
+	context = {} # ..for illustration purposes, this is how you pass data to the template
+	return render(request, "home.html", context)
+```
+
+8. Adding reference to the `home_view` function in the `main/urls.py` file:
+
+```python
+from django.contrib import admin
+from django.urls import path
+
+# Adding the following include to import the home_view function
+from homepage.views import home_view
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+	path('', home_view, name='home') # Adding the home_view function to the root URL
+]
+```
+
+*At this point, we can now run the server and see the homepage template we created at `http://localhost:8000`*  
+
+
+## Adding and Referencing Static Files
+
+### Setting up static files directories in Django
+
+**NOTE**: *Take a look on the official Django docs for [static files](https://docs.djangoproject.com/en/5.0/howto/static-files/)*
+
+
+1. Adding the following to the bottom of the `main/settings.py` file:
+
+```python
+...
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/5.0/howto/static-files/
+
+STATICFILES_DIRS = [
+	os.path.join(BASE_DIR, 'static'),
+	os.path.join(BASE_DIR, 'media'),
+]
+
+STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static_cdn') # ..cdn is short for content delivery network
+MEDIA_URL = 'media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media_cdn')
+
+TEMP = os.path.join(BASE_DIR, 'media_cdn/temp') # ..for temporary files used in the project when cropping images
+
+BASE_DIR = "http://127.0.0.1:8000" # ..for the base URL of the project. Will be easier to access the project URL in the future (This shall be changed to the actual URL of the project when deployed)
+```
+
+2. Adding the following to the `main/urls.py` file:
+
+```python
+...
+from django.conf import settings
+from django.conf.urls.static import static # Adding the following include to use static files
+...
+# after `urlpatterns` list
+
+if settings.DEBUG:
+	urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+	urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+```
+*This is to tell Django to serve the static files in the `static` directory*  
+
+
+3. Create a new directory named `static` at the same level as the `templates` directory and other apps directories:  
+
+```bash
+mkdir static
+mkdir static_cdn
+mkdir media
+mkdir media_cdn
+```
+
+**NOTE** *`static_cdn` and `media_cdn` directories are just an example of the directories where the static and media files will be stored when the project is deployed*  
+
+4. Using `collectstatic` command to collect all the static files in the project to the `static_cdn` directory:
+
+```bash
+python manage.py collectstatic
+```
+
+*This will collect all the static files in the project to the `static_cdn` directory*  
+
+*Currently, there are no static files in the project, so the command will collect all the static static files which come who knows where from.. mostly from the Django itself* 
+
+
+5. Adding `load static` to the top of the `layout.html` file in the `templates` directory:
+
+```html
+{% load static %}
+...
+```
+
+*This will allow us to use the static files (img, css, js etc) in the project*  
+
+
+### Adding goggle icons to the project
+
+**Optional** *This part can be skipped*
+
+1. Getting the link to the google icons.
+
+- Go to the [Google Icons](https://fonts.google.com/icons) website
+- Visit the respective GitHub repository for the icons [here](https://github.com/google/material-design-icons)
+- Copy the link to the icons : 
+```html
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+```
+**NOTE**: *verify if this is the right link.. for me the second link in the repo worked not the 1st one*
+
+2. Adding the link to the `layout.html` file in the `templates` directory:
+
+```html
+...
+<head>
+	...
+	<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+</head>
+...
+```
+
+*Now the google icons can be used in the project*  
+
+3. Example of the link to the `Home` icon in the `layout.html` file:
+
+```html
+...
+<body>
+	<a href="/" title="HOME">
+	<span class="material-symbols-outlined">home</span>
+	</a>
+	...
+</body>
+...
+```
+*This will display the `Home` icon which is clickable and will redirect to the home page*  
+
+
+### Adding stsatic images to the project
+
+1. Create a new directory named `images` in the `static` directory:
+
+```bash
+mkdir static/images
+```
+
+2. Add the images of choice to the `static/images` directory:
+
+*For example, [emoticon smile icon](https://www.iconexperience.com/o_collection/icons/?icon=emoticon_smile)*  
+
+3. Adding the image to the html file of choice:
+
+For example adding the image to the `layout.html` file as a link to the profile page :
+
+```html
+{% load static %}
+...
+<nav>
+	...
+	<a href="/profile" title="PROFILE"> <img src="{% static 'images/smile_32-32.png' %}"> </a>
+</nav>
+...
+```
+
+**NOTE**: **`{% load static %} must be added to the top of the html file to use the static files in the project`**
+
+4. Using `collectstatic` command to collect all the static files in the project to the `static_cdn` directory:
+
+```bash
+python manage.py collectstatic
+```
+
+*This will collect all the static files in the project to the `static_cdn` directory*  
+
+*The image will now be displayed on the navigation bar and will redirect to the profile page (which doesnt exist yet)*
+
+
+## Adding a Profile Page
+
+
