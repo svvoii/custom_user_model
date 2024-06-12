@@ -4,6 +4,7 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 
 class MyAccountManager(BaseUserManager):
 
+	# Overriding the default create_user and create_superuser functions
 	def create_user(self, email, username, password=None):
 		if not email:
 			raise ValueError("Users must have an email address")
@@ -32,16 +33,18 @@ class MyAccountManager(BaseUserManager):
 		user.save(using=self._db)
 		return user
 
-
+# This function will be used to get the profile image path of the user. User custom images will be stored in the `media_cdn/profile_images` directory
 def get_profile_image_filepath(self, filename):
 	return f'profile_images/{self.pk}/{"profile_image.png"}'
 
+# This function will be used to get the default profile image of the user.. in `static/images` directory
 def get_default_profile_image():
 	return "profile_images/default.png"
 
 class Account(AbstractBaseUser):
 
-	email = models.EmailField(verbose_name="email", max_length=60, unique=True)
+	# Overriding the default fields of the AbstractBaseUser class
+	email = models.EmailField(verbose_name="email", max_length=60, unique=True) # unique=True is to make sure the email is unique
 	username = models.CharField(max_length=30, unique=True)
 	date_joined = models.DateTimeField(verbose_name='date joined', auto_now_add=True)
 	last_login = models.DateTimeField(verbose_name='last login', auto_now=True)
@@ -49,13 +52,13 @@ class Account(AbstractBaseUser):
 	is_active = models.BooleanField(default=True)
 	is_staff = models.BooleanField(default=False)
 	is_superuser = models.BooleanField(default=False)
-	prfile_image = models.ImageField(max_length=255, upload_to=get_profile_image_filepath, null=True, blank=True, default=get_default_profile_image)
+	profile_image = models.ImageField(max_length=255, upload_to=get_profile_image_filepath, null=True, blank=True, default=get_default_profile_image)
 	hide_email = models.BooleanField(default=True)
 
 	objects = MyAccountManager()
 
-	USERNAME_FIELD = 'email'
-	REQUIRED_FIELDS = ['username']
+	USERNAME_FIELD = 'email' # This will be used to login
+	REQUIRED_FIELDS = ['username'] # These fields will be required when creating a user
 	
 	def __str__(self):
 		return self.username

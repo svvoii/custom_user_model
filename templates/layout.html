@@ -14,6 +14,14 @@
 		<a href="/" title="HOME"> <span class="material-symbols-outlined">home</span></a>
 
 		<a href="/profile" title="PROFILE"> <img src="{% static 'images/smile_32-32.png' %}"></a>
+
+		{% if request.user.is_authenticated %}
+			<p>{{ request.user.username }} is authenticated.</p>
+			<p>Profile image: {{ request.user.profile_image.url }}</p>
+			<img src="{{ request.user.profile_image.url }}" alt="LOGO" width="40" height="40">
+		{% else %}
+			<p>Not logged in</p>
+		{% endif %}
 	</nav>
 	<div>
 		{% block content %}
