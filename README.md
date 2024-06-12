@@ -2,7 +2,9 @@
 
 ## Creating New Django Project
 
-*Assuming `Python` and `pipen` are installed.*
+*Assuming `python` and `pipenv` are installed.*
+
+### To follow along this tutorial:
 
 1. Creating new directory for the project and install Django with pipenv
 
@@ -20,6 +22,30 @@ django-admin startproject main .
 ```
 this will create a new Django project in the current directory.  
 
+
+### To run the project from this repository:
+
+1. Clone the repository
+
+```bash
+git clone https://github.com/svvoii/custom_user_model.git
+
+cd custom_user_model
+```
+
+2. Install the dependencies
+
+```bash
+pipenv install requirements.txt
+```
+
+3. Run the server
+
+```bash
+python manage.py runserver
+```
+
+*This shall be it for the project setup*
 
 **NOTE**: *You can use the following command to save the requirements of the project to a file named `requirements.txt`*  
 
