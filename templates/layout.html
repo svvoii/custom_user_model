@@ -16,15 +16,25 @@
 		<a href="/profile" title="PROFILE"> <img src="{% static 'images/smile_32-32.png' %}"></a>
 
 		{% if request.user.is_authenticated %}
-			<p>{{ request.user.username }} is authenticated.</p>
-			<p>Profile image: {{ request.user.profile_image.url }}</p>
 			<img src="{{ request.user.profile_image.url }}" alt="LOGO" width="40" height="40">
+			<a href="{% url 'logout' %}" title="LOGOUT"> <span class="material-symbols-outlined">logout</span>Logout</a>
 		{% else %}
-			<p>Not logged in</p>
+			<a href="{% url 'login' %}" title="LOGIN"> <span class="material-symbols-outlined">login</span>Login</a>
+			<a href="{% url 'register' %}" title="REGISTER"> <span class="material-symbols-outlined">person_add</span>Register</a>
 		{% endif %}
 	</nav>
+
 	<div>
 		{% block content %}
+
+			{% if request.user.is_authenticated %}
+				<p>{{ request.user.username }} is authenticated.</p>
+				<p>profile image: {{ request.user.profile_image.url }}</p>
+			{% else %}
+				<p>not logged in</p>
+
+			{% endif %}	
+
 		{% endblock content %}
 	</div>
 

@@ -4,26 +4,9 @@
 
 *Assuming `python` and `pipenv` are installed.*
 
-### To follow along this tutorial:
-
-1. Creating new directory for the project and install Django with pipenv
-
-```bash
-mkdir custom_user_model
-cd custom_user_model
-
-pipenv install django
-```
-
-2. Create a new Django project
-
-```bash
-django-admin startproject main .
-```
-this will create a new Django project in the current directory.  
-
-
 ### To run the project from this repository:
+
+*If you want to run the project from this repository, follow the steps below to set up the environment and run the server*  
 
 1. Clone the repository
 
@@ -47,7 +30,29 @@ python manage.py runserver
 
 *This shall be it for the project setup*
 
-**NOTE**: *You can use the following command to save the requirements of the project to a file named `requirements.txt`*  
+
+### To follow along this tutorial:
+
+*If you want to follow along this tutorial and create the project from scratch, follow the steps below to set up the environment*
+
+1. Creating new directory for the project and install Django with pipenv
+
+```bash
+mkdir custom_user_model
+cd custom_user_model
+
+pipenv install django
+```
+
+2. Create a new Django project
+
+```bash
+django-admin startproject main .
+```
+*This will create a new Django project in the current directory with the name `main`*  
+
+
+**NOTE**: *The following command can be used at any point or whenever additional packages are installed to save the requirements of the project to a file named `requirements.txt`. This helps to track the dependencies of the project as well as to install the same dependencies at once in a new environment*
 
 ```bash
 pip freeze > requirements.txt
@@ -344,19 +349,20 @@ For example, [this image](https://www.iconninja.com/avatar-anonym-person-user-de
 *This will display the `Home` icon which is clickable and will redirect to the home page*  
 
 **NOTE**:  
-*For adding any other icons simply use the name of the icon in the `span` tag*  
-*Alternatively, the complete `<span ..>` tag is available on [Google Icons](https://fonts.google.com/icons) website. When the icon is clicked,there is a `<span ..>` tag on the right side panel in the `nserting the icon` section*  
+*To add any other icons simply use the name of the icon in the `<span ..>` tag*  
+*Or, alternatively, the complete `<span ..>` tag is available on [Google Icons](https://fonts.google.com/icons) website. When the icon is clicked, there is a `<span ..>` tag on the right side panel in the `Inserting the icon` section*  
 
 
 ## Building Custom User Model
 
-**NOTE**: *If curious, take a look at the original models on the [Django GitHub](https://github.com/django/django/blob/main/django/contrib/auth/base_user.py)*
+**NOTE**: *If curious, take a look at the original `AstractBaseUser` and `BaseUserManager` models on the [Django GitHub](https://github.com/django/django/blob/main/django/contrib/auth/base_user.py)*
 
 1. Create a new Django app
 
 ```bash
 python manage.py startapp account
 ```
+*This will create a new Django app in the project directory with the directory name `account`*
 
 2. Add the app to the installed apps in the `main/settings.py` file
 
@@ -501,12 +507,15 @@ admin.site.unregister(Group)
 python manage.py makemigrations
 python manage.py migrate
 ```
+*This will create the necessary migrations for the custom user model and apply them to the database*
 
 6. Create a superuser
 
 ```bash
 python manage.py createsuperuser
 ```
+*This is the necessary to be able to login to the admin page as well as see the custom user model we created*  
+*`createsuperuser` command will use the custom user model we created to create the superuser, where `email` will be used to login the user*    
 
 7. Run the server
 
@@ -565,11 +574,11 @@ AUTHENTICATION_BACKENDS = [
 ]
 ```
 
-*This will allow us to authenticate the user if the email or username is entered in any case*  
+*This will allow us to authenticate the user if the email or username is entered in either upper or lower case*  
 
 3. Setting up profile image in the `layout.html` file
 
-The following code will display the profile image of the user in the navigation bar if the user is authenticated. We add this code to the `layout.html` file in the `templates` directory:  
+*The following code will display the profile image of the user in the navigation bar on the homepage if the user is authenticated. We add this code to the `layout.html` file in the `templates` directory:*
 
 ```html
 ...
@@ -588,9 +597,320 @@ The following code will display the profile image of the user in the navigation 
 
 **NOTE**: *We dont have yet the profile page nor the login page, so to check if the profile image (default.png) is displayed in the navigation bar, we can login to the admin page and then navigate to `http://localhost:8000`*
 
-*This should display the profile image in the navigation bar as well as show the username of the user and the link to the current profile image in the browser window*  
+*This should display the profile image as well as show the username of the user and the link to the current profile image in the browser window*  
 
 
-## Adding a Profile Page
+## Adding Registration, Login and Profile Pages
+
+**NOTE**: *The is no styling applied to any of html files, so it looks a bit ugly.. no judgement please.. ;)*  
+
+
+### Registration Page
+
+1. Creating the followign new directory: `account/templates/account` and adding the `registration.html` in there:
+
+```html
+{% extends 'layout.html' %}
+
+{% load static %}
+
+{% block content %}
+
+	<h1>Registration</h1>
+
+	<form method="POST">
+		{% csrf_token %}
+
+		<img src="{% static 'images/smile_32-32.png' %}" alt="LOGO" width="40" height="40"></br>
+
+		<input type="email" name="email" placeholder="Email address" required autofocus></br>
+		<input type="text" name="username" placeholder="Username" required></br>
+		<in		<input type="text" name="username" placeholder="Username" required></br>
+		<input type="password" name="password2" placeholder="Confirm password" required></br>
+
+		{% for field in registration_form %}
+			{% for error in field.errors %}
+				<div style="color: red;"> 
+					<p> {{ error }} </p> 
+				</div>
+			{% endfor %}
+		{% endfor %}
+
+		{% if registration_form.non_field_errors %}
+			<div style="color: red;"> 
+				<p> {{ registration_form.non_field_errors }} </p>
+			</div>
+		{% endif %}
+
+		<button type="submit">Register</button>
+	</form>
+
+{% endblock content %}
+```
+
+2. Creating the `RegistrationForm` in the `account/forms.py` file:
+
+*First we create new file named `forms.py` in the `account` app directory and add the following class:*
+
+```python
+from django import forms
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import authenticate
+
+from account.models import Account
+
+class RegistrationForm(UserCreationForm):
+
+	email = forms.EmailField(max_length=255, help_text='Required. Add a valid email address')
+ 
+	class Meta:
+		model = Account
+		fields = ('email', 'username', 'password1', 'password2')
+
+	# This method is used to clean the data of the form (validate the data)
+	def clean_email(self):
+		email = self.cleaned_data['email'].lower() # ..`email` is the name of the field which passed from `register.html`
+		try:
+			account = Account.objects.get(email=email)
+		except Exception as e:
+			return email
+		raise forms.ValidationError(f'Email {email} is already in use.')
+	
+	def clean_username(self):
+		username = self.cleaned_data['username']
+		try:
+			account = Account.objects.get(username=username)
+		except Exception as e:
+			return username
+		raise forms.ValidationError(f'Username {username} is already in use.')
+```
+
+*If curious, take a look at the original `UserCreationForm` model on the [Django GitHub](https://github.com/django/django/blob/main/django/contrib/auth/forms.py)*  
+
+
+3. Adding the `register_view` function to the `account/views.py` file:
+
+*This function will handle the registration process and render the `registration.html` template*
+
+```python
+from django.shortcuts import render, redirect
+from django.contrib.auth import login, authenticate
+from django.http import HttpResponse
+
+from account.forms import RegistrationForm
+
+
+def register_view(request, *args, **kwargs):
+	user = request.user
+	if user.is_authenticated:
+		return HttpResponse(f"You are already authenticated as {user.email}.")
+
+	context = {}
+	if request.POST:
+		form = RegistrationForm(request.POST) # this will create a form object with the data passed from the `register.html`
+		if form.is_valid(): # this will validate the form data (all the fields of the form are valid)
+			form.save() # this will trigger the `clean_email` and `clean_username` methods of the `RegistrationForm` class
+			email = form.cleaned_data.get('email')
+			raw_password = form.cleaned_data.get('password1')
+			account = authenticate(email=email, password=raw_password)
+			login(request, account)
+
+			destination = det_redirect_if_exists(request) # this is created in the (Login, Logout) step
+			# destination = kwargs.get('next')
+			if destination:
+				return redirect(destination)
+			else:
+				return redirect('home') # `home` is the name of the URL pattern in the `main/urls.py` file
+		else:
+			context['registration_form'] = form # this will pass any error message related to the form fields
+
+	return render(request, 'account/register.html', context)
+
+
+def det_redirect_if_exists(request):
+	redirect = None
+	if request.GET:
+		if request.GET.get('next'):
+			redirect = str(request.GET.get('next'))
+	return redirect
+```
+
+4. Adding the reference to the `register_view` function in the `main/urls.py` file:
+
+```python
+...
+from account.views import register_view
+
+urlpatterns = [
+	...
+	path('register/', register_view, name='register'),
+]
+...
+```
+
+5. Adding the link to the registration page in the `layout.html` file in the `templates` directory:
+
+```html
+<nav>
+	...
+	{% if request.user.is_authenticated %}
+		...
+	{% else %}
+		<p>Not logged in</p>
+
+		<a href="{% url 'register' %}" title="REGISTER"> <span class="material-symbols-outlined">person_add</span>Register</a>
+	{% endif %}
+</nav>
+...
+```
+
+*This will allow us to access the registration page at `http://localhost:8000/register` directly from the homepage*  
+
+*Also there is an error pops up when trying to delete the user from the admin page.. this will be fixed later*  
+
+
+### Login & Logout
+
+1. Creating the `login.html` file in the `account/templates/account` directory:
+
+```html
+{% extends 'layout.html' %}
+{% load static %}
+{% block content %}
+	<h1>Login</h1>
+	<form method="POST">
+		{% csrf_token %}
+
+		<img src="{% static 'images/smile_32-32.png' %}" alt="LOGO" width="40" height="40"></br>
+
+		<input type="email" name="email" placeholder="Email address" required autofocus></br>
+		<input type="password" name="password" placeholder="Password" required></br>
+
+		{% for field in login_form %}
+			{% for error in field.errors %}
+				<div style="color: red;"> 
+					<p> {{ error }} </p> 
+				</div>
+			{% endfor %}
+		{% endfor %}
+
+		{% if login_form.non_field_errors %}
+			<div style="color: red;"> 
+				<p> {{ login_form.non_field_errors }} </p>
+			</div>
+		{% endif %}
+
+		<button type="submit">Login</button>
+	</form>
+
+	<div>
+		<a href="#">Reset password</a>
+	</div>
+{% endblock content %}
+```
+
+2. Creating new class in the `account/forms.py` file:
+
+*This class will be used to create the login form*
+
+```python
+...
+# Adding new class to handle the login form
+class AccountAuthenticationForm(forms.ModelForm):
+
+	password = forms.CharField(label='Password', widget=forms.PasswordInput) # `widget..` makes the password field to be displayed as a password field
+
+	class Meta:
+		model = Account
+		fields = ('email', 'password')
+
+	def clean(self):
+		if self.is_valid():
+			email = self.cleaned_data['email']
+			password = self.cleaned_data['password']
+			if not authenticate(email=email, password=password):
+				raise forms.ValidationError('Invalid login')
+```
+
+3. Adding the `login_view` function to the `account/views.py` file:
+
+*This function will handle the login process and render the `login.html` template*
+
+```python
+...
+
+def logout_view(request):
+	logout(request)
+	return redirect('home')
+
+def login_view(request, *args, **kwargs):
+	context = {}
+
+	user = request.user
+	if user.is_authenticated:
+		return redirect('home')
+	
+	if request.POST:
+		form = AccountAuthenticationForm(request.POST)
+		if form.is_valid():
+			email = request.POST['email']
+			password = request.POST['password']
+			user = authenticate(email=email, password=password)
+
+			if user:
+				login(request, user)
+				destination = det_redirect_if_exists(request)
+				if destination:
+					return redirect(destination)
+				return redirect('home')
+		else:
+			context['login_form'] = form
+
+	return render(request, 'account/login.html', context)
+
+def det_redirect_if_exists(request):
+	redirect = None
+	if request.GET:
+		if request.GET.get('next'):
+			redirect = str(request.GET.get('next'))
+	return redirect
+```
+
+4. Adding the reference to the `login_view` function in the `main/urls.py` file:
+
+```python
+...
+from account.views import register_view, login_view, logout_view
+
+urlpatterns = [
+	...
+	path('login/', login_view, name='login'),
+	path('logout/', logout_view, name='logout'),
+]
+...
+```
+
+5. Adding the link to the login page in the `layout.html` file in the `templates` directory:
+
+```html
+...
+<nav>
+	<a href="/" title="HOME"> <span class="material-symbols-outlined">home</span></a>
+	<a href="/profile" title="PROFILE"> <img src="{% static 'images/smile_32-32.png' %}"></a>
+
+	{% if request.user.is_authenticated %}
+		<img src="{{ request.user.profile_image.url }}" alt="LOGO" width="40" height="40">
+		<a href="{% url 'logout' %}" title="LOGOUT"> <span class="material-symbols-outlined">logout</span>Logout</a>
+	{% else %}
+		<a href="{% url 'login' %}" title="LOGIN"> <span class="material-symbols-outlined">login</span>Login</a>
+		<a href="{% url 'register' %}" title="REGISTER"> <span class="material-symbols-outlined">person_add</span>Register</a>
+	{% endif %}
+</nav>
+...
+```
+
+*This will allow us to access the login page at `http://localhost:8000/login` directly from the homepage. As well as to show the `Logout` option*
+
+
 
 

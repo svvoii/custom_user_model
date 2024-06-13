@@ -20,10 +20,14 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 from homepage.views import home_view
+from account.views import register_view, login_view, logout_view
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-	path('', home_view, name='home')
+	path('admin/', admin.site.urls),
+	path('', home_view, name='home'),
+	path('login/', login_view, name='login'),
+	path('logout/', logout_view, name='logout'),
+	path('register/', register_view, name='register'),
 ]
 
 # This is only needed when running in debug mode during development. The files will be served from the static_cdn and media_cdn directories.

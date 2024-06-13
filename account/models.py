@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.contrib.sessions.models import Session
 
 
 class MyAccountManager(BaseUserManager):
@@ -71,3 +72,4 @@ class Account(AbstractBaseUser):
 
 	def has_module_perms(self, app_label):
 		return True
+	
