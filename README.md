@@ -1,5 +1,20 @@
 # Custom User Model
 
+This repository contains the code for the tutorial on how to create a custom user model in Django. The tutorial covers the following topics:
+
+- Creating a new Django project
+- Adding a new apps to the project
+- Creating templates
+- Adding and referencing static files
+- Adding default profile image
+- Building a custom user model
+- Handling case-insensitive input with backends model
+- Custom forms for registration and login
+- Password reset functionality
+- Profile page with update functionality
+
+You can follow along the tutorial to create the project from scratch or run the project from this repository. The project is built using Django 3.2.7 and Python 3.9.6.  
+
 ## Creating New Django Project
 
 *Assuming `python` and `pipenv` are installed.*
@@ -769,7 +784,7 @@ urlpatterns = [
 *Also there is an error pops up when trying to delete the user from the admin page.. this will be fixed later*  
 
 
-### Login & Logout
+### Login, Logout, Password Reset, Profile Pages
 
 1. Creating the `login.html` file in the `account/templates/account` directory:
 
@@ -911,6 +926,8 @@ urlpatterns = [
 
 *This will allow us to access the login page at `http://localhost:8000/login` directly from the homepage. As well as to show the `Logout` option*
 
+
+### Password Reset Pages
 
 
 
