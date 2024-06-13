@@ -615,7 +615,7 @@ AUTHENTICATION_BACKENDS = [
 *This should display the profile image as well as show the username of the user and the link to the current profile image in the browser window*  
 
 
-## Adding Registration, Login and Profile Pages
+## Adding Registration, Login, Logout, Password Reset, Profile Pages
 
 **NOTE**: *The is no styling applied to any of html files, so it looks a bit ugly.. no judgement please.. ;)*  
 
@@ -784,7 +784,7 @@ urlpatterns = [
 *Also there is an error pops up when trying to delete the user from the admin page.. this will be fixed later*  
 
 
-### Login, Logout, Password Reset, Profile Pages
+### Login, Logout
 
 1. Creating the `login.html` file in the `account/templates/account` directory:
 
