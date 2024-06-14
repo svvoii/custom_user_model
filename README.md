@@ -929,5 +929,173 @@ urlpatterns = [
 
 ### Password Reset Pages
 
+**NOTE**: *Resetting the password in the development environment is different from the production environment. In the development environment, the password reset link will be displayed in the console. In the production environment, the password reset link will be sent to the user's email, and the process is different*  
+
+The following steps will be done in the development environment:  
+
+1. Adding the `pasword_reset` directory in the `templates` which is at the same level as the `account` app directory:
+
+```bash
+mkdir templates/password_reset
+```
+
+2. Addting several files in the `password_reset` directory:
+`password_change.html`
+`password_change_done.html`
+`password_reset_complete.html`
+`password_reset_done.html`
+`password_reset_email.html`
+`password_reset_form.html`
+`password_reset_subject.txt`
+
+- Adding the `password_change.html` :
+
+```html
+{% extends 'layout.html' %}
+{% block content %}
+<form method="POST">
+	{% csrf_token %}
+	<h1>Change password</h1>
+    <input name="old_password" placeholder="Old password" type="password" required="true">
+    <input name="new_password1" placeholder="New password" type="password" required="true">
+    <input name="new_password2" placeholder="Confirm password" type="password" required="true">
+
+    {% for field in form %}
+		{% for error in field.errors %}
+			<p style="color: red"> {{ error }} </p>
+		{% endfor %}
+    {% endfor %}
+
+  <button type="submit">Update</button>  
+</form>
+{% endblock %}
+``` 
+
+- Adding the `password_change_done.html` :
+
+```html
+{% extends 'layout.html' %}
+{% block content %}
+<div>
+	<p>Your password has been Updated.</p>
+</div>
+{% endblock %}
+```
+
+- Adding the `password_reset_complete.html` :
+
+```html
+{% extends 'layout.html' %}
+{% block content %}
+<div>
+	<p>Your password has been reset. You may go ahead and <a href="{% url 'login' %}">sign in</a> now.</p>
+</div>
+{% endblock %}
+```
+
+- Adding `password_reset_done.html` :
+
+```html
+{% extends 'layout.html' %}
+{% block content %}
+<div>
+	<p>
+	We've emailed you instructions for setting your password, if an account exists with the email you entered.
+	You should receive them shortly.
+	</p>
+	<p>
+	If you don't receive an email, please make sure you've entered the address you registered with,
+	and check your spam folder.
+	</p>
+	<p><a href="{% url 'home' %}">Return to home page</a></p>
+</div>
+{% endblock %}
+```
+
+- Adding `password_reset_email.html` :
+
+```html
+{% autoescape off %}
+To initiate the password reset process for your Account {{ user.email }},
+click the link below:
+
+{{ protocol }}://{{ domain }}{% url 'password_reset_confirm' uidb64=uid token=token %}
+
+If clicking the link above doesn't work, please copy and paste the URL in a new browser
+window instead.
+
+Sincerely,
+The Open-Chat Team
+{% endautoescape %}
+```
+
+- Adding `password_reset_form.html` :
+
+```html
+{% extends 'layout.html' %}
+{% block content %}
+<form method="POST">
+	{% csrf_token %}
+	<h1>Reset password</h1>
+	<input name="email" placeholder="Email address" type="email" required="true" >
+	<button>Send reset email</button>  
+</form>
+{% endblock %}
+```
+
+- Adding `password_reset_subject.txt` :
+
+```txt
+PASSWORD RESET
+```
+
+3. Adding the following urls to the `main/urls.py` file:
+
+```python
+...
+from django.contrib.auth import views as auth_views # For password reset (built-in Django)
+...
+urlpatterns = [
+	...
+	# Password reset links (ref: https://github.com/django/django/blob/master/django/contrib/auth/views.py)
+    path('password_change/done/', auth_views.PasswordChangeDoneView.as_view(template_name='password_reset/password_change_done.html'), name='password_change_done'),
+
+    path('password_change/', auth_views.PasswordChangeView.as_view(template_name='password_reset/password_change.html'), name='password_change'),
+
+    path('password_reset/done/', auth_views.PasswordResetCompleteView.as_view(template_name='password_reset/password_reset_done.html'), name='password_reset_done'),
+
+    path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'), path('password_reset/', auth_views.PasswordResetView.as_view(), name='password_reset'),
+    
+    path('reset/done/', auth_views.PasswordResetCompleteView.as_view(template_name='password_reset/password_reset_complete.html'), name='password_reset_complete'),
+]	
+...
+```
+
+**NOTE**: *Here is the link to [auth views on Django GitHub](https://github.com/django/django/blob/main/django/contrib/auth/views.py) if curious. It contains all indicated above views. This also corresponds to the files we created in the `password_reset` directory*  
+
+4. Adding the necessary settings to the `main/settings.py` file:
+
+**NOTE**: *The following settings is valid for the development environment !! In the production environment, the settings will be different. It will be necessary to set up the email server and send the actual email to the user. While in the development environment, the password reset link will be displayed in the terminal window*  
+
+```python
+...
+DEBUG = True # After the DEBUG setting
+
+if DEBUG:
+	EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' # This will display the password reset link in the terminal window
+...
+```
+
+5. The following step would be to update the reference link in the `login.html` file in the `account/templates/account/login.html`. At the bottom of the file :
+
+```html
+...
+<div>
+	<a href="{% url 'password_reset' %}">Reset password?</a>
+</div>
+...
+```
+
+*This shall be it for the password reset pages. The password reset link will be displayed in the terminal window when the user enters the email address in the password reset form*.  
 
 
