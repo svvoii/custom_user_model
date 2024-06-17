@@ -211,7 +211,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media_cdn')
 
 TEMP = os.path.join(BASE_DIR, 'media_cdn/temp') # ..for temporary files used in the project when cropping images
 
-BASE_DIR = "http://127.0.0.1:8000" # ..for the base URL of the project. Will be easier to access the project URL in the future (This shall be changed to the actual URL of the project when deployed)
+BASE_URL = "http://127.0.0.1:8000" # ..for the base URL of the project. Will be easier to access the project URL in the future (This shall be changed to the actual URL of the project when deployed)
 ```
 
 2. Adding the following to the `main/urls.py` file:
@@ -1075,7 +1075,7 @@ urlpatterns = [
 
 4. Adding the necessary settings to the `main/settings.py` file:
 
-**NOTE**: *The following settings is valid for the development environment !! In the production environment, the settings will be different. It will be necessary to set up the email server and send the actual email to the user. While in the development environment, the password reset link will be displayed in the terminal window*  
+**NOTE**: *The following settings are valid for the development environment !! In the production environment, the settings are different. It will be necessary to set up the email server and send the actual email to the user. While in the development environment, the password reset link will be displayed in the terminal window*  
 
 ```python
 ...
@@ -1100,5 +1100,203 @@ if DEBUG:
 
 
 ## Profile Page
+
+### ***ADDING BASIC PROFILE PAGE***
+
+Lets first discuss the profile and its functionality.  
+Profile page will be used to display the user's profile information as well as to update the profile image.  
+Also profile page can have several states and functionalities :  
+
+- **is_self**: *This is where the user is viewing their own profile page and can change the profile image, password, link to friends..*
+- **is_user**: *This is where the user is viewing the profile page of another user and can send friend request..*  
+- **is_friend**: *This is where the user is viewing the profile page of a friend and can send messages, remove friend..*
+
+**NOTE**: *The end logic of how to represent a profile page can be quite complex and can be implemented in many ways. For now, we will implement the basic functionality of the profile page. For now we will treat the profile page based on two events*:  
+- *The user is viewing their own profile page*
+- *The user is viewing the profile page of another user*
+
+1. Creating `profile.html` file in `account/templates/account/` directory:
+
+
+```html
+{% extends 'layout.html' %}
+{% load static %}
+
+{% block content %}
+<img src="{{ request.user.profile_image.url }}" alt="Profile Image" width="40" height="40">
+<p>Email</p>
+{%  if is_self %}
+	<h5>{{ email }}</h5>
+{% else %}
+	{% if hide_email %}
+		<h5>**********</h5>
+	{% else %}
+		<h5>{{ email }}</h5>
+	{% endif %}
+{% endif %}
+<p>Username</p>
+<h5>{{ username }}</h5>
+
+<!-- If Auth user is viewing their own profile -->
+{% if is_self %}
+	<a href="#">Update</a></br>
+	<a href="{% url 'password_change' %}">Change password</a></br>
+{% endif %}
+
+{% if request.user.is_authenticated %}
+
+	<!-- THEM to YOU -->
+	{% if request_sent == 0 %}
+	<div>
+		<span>Accept Friend Request</span>
+		<span id="id_cancel_{{id}}" onclick='triggerDeclineFriendRequest("{{ pending_friend_request_id }}")'>cancel</span>
+		<span id="id_confirm_{{id}}" onclick='triggerAcceptFriendRequest("{{ pending_friend_request_id }}")'>check</span>
+	</div>
+	{% endif %}
+
+	<!-- Cancel Friend Request / Send Friend Request / Remove Friend -->
+	{% if is_friend == False and is_self == False %}
+		<!-- You sent them a request -->
+		{% if request_sent == 1 %}
+			<button> Cancel Friend Request </button></br>
+		{% endif %}
+		<!-- No requests have been sent -->
+		{% if request_sent == -1 %}
+			<button> Send Friend Request </button></br>
+		{% endif %}
+	{% endif %}
+		
+	{% if is_friend %}
+		<button> Friends </button>
+		<a href="#" onclick="removeFriend('{{ id }}', onFriendRemoved)">Unfriend</a>
+	{% endif %}
+	
+	<!-- TODO -->
+	<!-- Friend list link -->
+	<a href="#">
+		<span> contact_page </span></br>
+		<span> Friends (0) </span></br>
+	</a>
+
+	<!-- TODO -->
+	{#% if friend_requests %#}
+	<!-- Friend requests -->
+		<a href="#">
+			<span> person_add </span></br>
+			<span> Friend Requests (0) </span></br>
+		</a>
+	{#% endif %#}
+
+	{% if is_friend %}
+		<div onclick="createOrReturnPrivateChat('{{ id }}')">
+			<span> message </span></br>
+			<span> Message </span></br>
+		</div>
+	{% endif %}
+
+{% endif %}
+{% endblock content %}
+
+```
+
+2. Adding the `profile_view` function to the `account/views.py` file:
+
+```python
+...
+from django.conf import settings
+
+from account.models import Account
+...
+...
+def profile_view(request, *args, **kwargs):
+	content = {}
+	user_id = kwargs.get('user_id')
+
+	try:
+		account = Account.objects.get(pk=user_id)
+	except Account.DoesNotExist:
+		return HttpResponse("User not found.")
+
+	if account:
+		content['id'] = account.id
+		content['email'] = account.email
+		content['username'] = account.username
+		content['profile_image'] = account.profile_image
+		content['hide_email'] = account.hide_email
+
+		is_self = True
+		is_friend = False
+		user = request.user
+		if user.is_authenticated and user != account:
+			is_self = False
+		elif not user.is_authenticated:
+			is_self = False
+
+		content['is_self'] = is_self
+		content['is_friend'] = is_friend
+		content['BASE_URL'] = settings.BASE_URL
+
+	return render(request, 'account/profile.html', content)
+```
+
+3. Adding new url file in the `account` app directory named `urls.py`:
+
+in the `account/urls.py` file:
+
+```python
+from django.urls import path
+from account.views import profile_view
+
+app_name = 'account'
+
+urlpatterns = [
+	path('<user_id>/', profile_view, name='profile'),
+]
+
+``` 
+**NOTE**: *`<user_id>/` is a dynamic URL pattern that will be passed to the `profile_view` function in the `account/views.py` file.*  
+*`name` attribute is used to reference this URL pattern in the Django templates.*  
+*`app_name` attribute is used to namespace the URL pattern.*  
+*This is useful when you have multiple apps in your Django project and you want to avoid naming conflicts between URL patterns.*  
+*`app_name` attribute is used in the `main/urls.py` file to include the URL patterns from this file.*  
+
+
+4. Adding the reference to the account urls in the `main/urls.py` file:
+
+```python
+...
+from django.conf.urls import include
+...
+urlpatterns = [
+	...
+	path('account/', include('account.urls', namespace='account')),
+	...
+]
+```
+
+5. Adding the link to the profile page in the `layout.html` file in the `templates` directory:
+
+```html
+<nav>
+	...
+	{% if request.user.is_authenticated %}
+		...
+		<a href="{% url 'account:profile' user_id=request.user.id %}" title="PROFILE"> <img src="{% static 'images/smile_32-32.png' %}"></a>
+	{% else %}
+		...
+	{% endif %}
+</nav>
+```
+
+**NOTE**: *`account:profile` is the namespace of the URL pattern we created in the `account/urls.py` file*  
+*So, that `account` is the app name indicated both in the `account/urls.py` as `app_name = 'account'` and in the `main/urls.py` as `namespace='account'`*  
+*`profile` is the name of the URL pattern we created in the `account/urls.py` file*  
+
+*We can go ahead and access the profile page at `http://localhost:8000/profile`*  
+
+
+### ***FINDING AND ADDING FRIENDS***  
+
+
 
 

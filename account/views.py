@@ -1,8 +1,10 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout
 from django.http import HttpResponse
+from django.conf import settings
 
 from account.forms import RegistrationForm, AccountAuthenticationForm
+from account.models import Account
 
 
 def register_view(request, *args, **kwargs):
@@ -69,3 +71,34 @@ def det_redirect_if_exists(request):
 		if request.GET.get('next'):
 			redirect = str(request.GET.get('next'))
 	return redirect
+
+
+def profile_view(request, *args, **kwargs):
+	content = {}
+	user_id = kwargs.get('user_id')
+
+	try:
+		account = Account.objects.get(pk=user_id)
+	except Account.DoesNotExist:
+		return HttpResponse("User not found.")
+
+	if account:
+		content['id'] = account.id
+		content['email'] = account.email
+		content['username'] = account.username
+		content['profile_image'] = account.profile_image
+		content['hide_email'] = account.hide_email
+
+		is_self = True
+		is_friend = False
+		user = request.user
+		if user.is_authenticated and user != account:
+			is_self = False
+		elif not user.is_authenticated:
+			is_self = False
+
+		content['is_self'] = is_self
+		content['is_friend'] = is_friend
+		content['BASE_URL'] = settings.BASE_URL
+
+	return render(request, 'account/profile.html', content)

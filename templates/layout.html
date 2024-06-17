@@ -13,11 +13,11 @@
 	<nav>
 		<a href="/" title="HOME"> <span class="material-symbols-outlined">home</span></a>
 
-		<a href="/profile" title="PROFILE"> <img src="{% static 'images/smile_32-32.png' %}"></a>
-
 		{% if request.user.is_authenticated %}
-			<img src="{{ request.user.profile_image.url }}" alt="LOGO" width="40" height="40">
+			<a href="{% url 'account:profile' user_id=request.user.id %}" title="PROFILE"> <img src="{{ request.user.profile_image.url }}" alt="LOGO" width="40" height="40"></a>
+			{% comment %} <img src="{{ request.user.profile_image.url }}" alt="LOGO" width="40" height="40"> {% endcomment %}
 			<a href="{% url 'logout' %}" title="LOGOUT"> <span class="material-symbols-outlined">logout</span>Logout</a>
+			{% comment %} <a href="{% url 'account:profile' user_id=request.user.id %}" title="PROFILE"> <img src="{% static 'images/smile_32-32.png' %}"></a> {% endcomment %}
 		{% else %}
 			<a href="{% url 'login' %}" title="LOGIN"> <span class="material-symbols-outlined">login</span>Login</a>
 			<a href="{% url 'register' %}" title="REGISTER"> <span class="material-symbols-outlined">person_add</span>Register</a>

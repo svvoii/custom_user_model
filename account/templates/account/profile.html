@@ -1,0 +1,79 @@
+{% extends 'layout.html' %}
+{% load static %}
+
+{% block content %}
+
+<img src="{{ request.user.profile_image.url }}" alt="Profile Image" width="40" height="40">
+<p>Email</p>
+{%  if is_self %}
+	<h5>{{ email }}</h5>
+{% else %}
+	{% if hide_email %}
+		<h5>**********</h5>
+	{% else %}
+		<h5>{{ email }}</h5>
+	{% endif %}
+{% endif %}
+<p>Username</p>
+<h5>{{ username }}</h5>
+
+<!-- If Auth user is viewing their own profile -->
+{% if is_self %}
+	<a href="#">Update</a></br>
+	<a href="{% url 'password_change' %}">Change password</a></br>
+{% endif %}
+
+{% if request.user.is_authenticated %}
+
+	<!-- THEM to YOU -->
+	{% if request_sent == 0 %}
+	<div>
+		<span>Accept Friend Request</span>
+		<span id="id_cancel_{{id}}" onclick='triggerDeclineFriendRequest("{{ pending_friend_request_id }}")'>cancel</span>
+		<span id="id_confirm_{{id}}" onclick='triggerAcceptFriendRequest("{{ pending_friend_request_id }}")'>check</span>
+	</div>
+	{% endif %}
+
+	<!-- Cancel Friend Request / Send Friend Request / Remove Friend -->
+	{% if is_friend == False and is_self == False %}
+		<!-- You sent them a request -->
+		{% if request_sent == 1 %}
+			<button> Cancel Friend Request </button></br>
+		{% endif %}
+		<!-- No requests have been sent -->
+		{% if request_sent == -1 %}
+			<button> Send Friend Request </button></br>
+		{% endif %}
+	{% endif %}
+		
+	{% if is_friend %}
+		<button> Friends </button>
+		<a href="#" onclick="removeFriend('{{ id }}', onFriendRemoved)">Unfriend</a>
+	{% endif %}
+	
+	<!-- TODO -->
+	<!-- Friend list link -->
+	<a href="#">
+		<span> contact_page </span></br>
+		<span> Friends (0) </span></br>
+	</a>
+
+	<!-- TODO -->
+	{#% if friend_requests %#}
+	<!-- Friend requests -->
+		<a href="#">
+			<span> person_add </span></br>
+			<span> Friend Requests (0) </span></br>
+		</a>
+	{#% endif %#}
+
+	{% if is_friend %}
+		<div onclick="createOrReturnPrivateChat('{{ id }}')">
+			<span> message </span></br>
+			<span> Message </span></br>
+		</div>
+	{% endif %}
+
+{% endif %}
+	
+{% endblock content %}
