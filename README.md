@@ -1099,7 +1099,7 @@ if DEBUG:
 *This shall be it for the password reset pages. The password reset link will be displayed in the terminal window when the user enters the email address in the password reset form*.  
 
 
-## Profile Page
+## ***Profile Page***
 
 ### ***ADDING BASIC PROFILE PAGE***
 
@@ -1281,12 +1281,13 @@ urlpatterns = [
 	...
 	{% if request.user.is_authenticated %}
 		...
-		<a href="{% url 'account:profile' user_id=request.user.id %}" title="PROFILE"> <img src="{% static 'images/smile_32-32.png' %}"></a>
+		<a href="{% url 'account:profile' user_id=request.user.id %}" title="PROFILE"> <img src="{{ request.user.profile_image.url }}" alt="LOGO" width="40" height="40"></a>
 	{% else %}
 		...
 	{% endif %}
 </nav>
 ```
+*This change to the navbar will allow us to access profile page by clicking on the profile image in the navigation bar*  
 
 **NOTE**: *`account:profile` is the namespace of the URL pattern we created in the `account/urls.py` file*  
 *So, that `account` is the app name indicated both in the `account/urls.py` as `app_name = 'account'` and in the `main/urls.py` as `namespace='account'`*  
@@ -1295,8 +1296,185 @@ urlpatterns = [
 *We can go ahead and access the profile page at `http://localhost:8000/profile`*  
 
 
-### ***FINDING AND ADDING FRIENDS***  
+### ***IMPLEMENTING USER SEARCH***  
 
+*This will allow the user to search for other users by their username or email address. The search results will be displayed in the search page*  
 
+1. Creating the `search_results.html` file in the `account/templates/account` directory:
+
+```html
+{% extends 'layout.html' %}
+{% load static %}
+
+{% block content %}
+
+{% if accounts %}
+
+	{% for account in accounts %}
+		<a href="{% url 'account:profile' user_id=account.0.id %}">
+			<img src="{{ account.0.profile_image.url }}" alt="profile_image">
+		</a>
+
+		<a href="{% url 'account:profile' user_id=account.0.id %}">
+			<h4>{{ account.0.username }}</h4>
+			{% if account.1 %}
+				<p><a href="#" onclick="createOrReturnPrivateChat('{{ account.0.id }}')">Send a Message</a></p>
+			{% endif %}
+		</a>
+
+		{% if account.1 %} <!-- If friends -->
+			<p> Friends </p>
+			<span> check_circle_outline </span>
+		{% else %}
+			{% if account.0 !=  request.user %} <!-- If not friends -->
+				<p> Not Friends </p>
+				<span> cancel </span>
+			{% endif %}
+		{% endif %}
+
+		{% if account.0 == request.user %} <!-- If you -->
+			<p> This is you </p>
+			<span> person_pin </span>
+		{% endif %}
+
+	{% if forloop.counter|divisibleby:2 %} <!-- If even.. `forloop.counter` is to access the index -->
+		<!-- <br> -->
+	{% endif %}
+	
+	{% endfor %}
+	
+	{% else %} <!-- If no friends -->
+		<p> No results </p>
+{% endif %}
+
+{#%  include 'chat/create_or_return_private_chat.html' %#}
+
+{% endblock content %}
+```
+
+2. Adding the `account_search_view` function to the `account/views.py` file:
+
+```python
+...
+def account_search_view(request, *args, **kwargs):
+	context = {}
+
+	if request.method == 'GET':
+		search_query = request.GET.get('q')
+		if len(search_query) > 0:
+			# the following query will return all the accounts whose email or username contains the search query
+			search_results = Account.objects.filter(email__icontains=search_query).filter(username__icontains=search_query).distinct()
+			user = request.user
+			accounts = [] # ..list structure: `[(account1, True), (account2, False), ...]` true/False is for friend status
+			for account in search_results:
+				accounts.append((account, False)) # False for indicating that the user is not a friend
+			context['accounts'] = accounts
+
+	return render(request, 'account/search_results.html', context)
+```
+
+3. Adding the reference to the `account_search_view` function in the `account/urls.py` file:
+
+```python
+...
+from account.views import register_view, login_view, logout_view, account_search_view # ..adding the account_search_view function
+...
+urlpatterns = [
+	...
+	path('search/', account_search_view, name='search'),
+	...
+]
+```
+
+4. Modifying the navbar to show the search bar.
+
+*Currently the navbar in the `layout.html` file in the main `templates` directory. We gonna move the navbar to its own file `header.html` in the `templates` to make it more readable and maintainable*  
+
+So, in the `templates/header.html` file:
+
+```html
+<style type="text/css">
+
+	nav {
+		display: flex;
+		justify-content: space-between;
+		background-color: lightgray;
+		padding: 10px;
+		border-bottom: 1px solid black;
+	}
+
+	nav a {
+		margin-right: 20px;
+		color: darkblue;
+		text-decoration: none;
+	}
+
+</style>
+
+<nav>
+	<a href="/" title="HOME"> <span class="material-symbols-outlined">home</span></a>
+
+	<form action="{% url 'search' %}" method="get">
+		<input type="text" name="q" id="id_q_large" placeholder="Search...">
+		<input type="submit" value="Search">
+	</form>
+
+	{% if request.user.is_authenticated %}
+		<a href="{% url 'account:profile' user_id=request.user.id %}" title="PROFILE"> <img src="{{ request.user.profile_image.url }}" alt="LOGO" width="32" height="32"></a>
+		<a href="{% url 'logout' %}" title="LOGOUT"> <span class="material-symbols-outlined">logout</span>Logout</a>
+	{% else %}
+		<a href="{% url 'login' %}" title="LOGIN"> <span class="material-symbols-outlined">login</span>Login</a>
+		<a href="{% url 'register' %}" title="REGISTER"> <span class="material-symbols-outlined">person_add</span>Register</a>
+	{% endif %}
+
+</nav>
+```
+
+**NOTE**: *The `<style..` tag is used to style the navigation bar for a better visual, it is still ugly.. but better. The styling will be done separately in any desirable way with bootstrap, manual css, etc.. This styling is temporary*
+
+**NOTE**: *The `<form..>` tag is used to create a search bar in the navigation bar. The search bar will be used to search for other users by their username or email address*  
+
+5. Modify the `layout.html` file to include the `header.html` file:
+
+*This is how the `templates/layout.html` file can look like at this point:*
+
+```html
+{% load static %}
+
+<!DOCTYPE html>
+<html lang=en>
+
+<head>
+    <meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+</head>
+
+<body>
+	{% include 'header.html' %}
+
+	<div>
+		{% block content %}
+
+			{% if request.user.is_authenticated %}
+				<p>{{ request.user.username }} is authenticated.</p>
+				<p>profile image: {{ request.user.profile_image.url }}</p>
+			{% else %}
+				<p>not logged in</p>
+
+			{% endif %}	
+
+		{% endblock content %}
+	</div>
+
+	{% include 'footer.html' %}
+</body>
+
+</html>
+```
+
+**NOTE**: *The `{% include 'header.html' %}` tag is used to include the `header.html` file in the `layout.html` file. This will display the navigation bar in the homepage*
+
+*At this point, we can now access the search page at `http://localhost:8000/search` and search for other users by their username or any characters in tehir username*  
 
 

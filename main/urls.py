@@ -22,7 +22,7 @@ from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views # For password reset (built-in Django)
 
 from homepage.views import home_view
-from account.views import register_view, login_view, logout_view
+from account.views import register_view, login_view, logout_view, account_search_view
 
 urlpatterns = [
 	path('', home_view, name='home'),
@@ -31,6 +31,7 @@ urlpatterns = [
 	path('login/', login_view, name='login'),
 	path('logout/', logout_view, name='logout'),
 	path('register/', register_view, name='register'),
+	path('search/', account_search_view, name='search'),
 
 	# Password reset URLs
     path('password_change/done/', auth_views.PasswordChangeDoneView.as_view(template_name='password_reset/password_change_done.html'), name='password_change_done'),
