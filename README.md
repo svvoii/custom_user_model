@@ -1685,8 +1685,16 @@ urlpatterns = [
 
 *This shall allow us to update the profile image, email address, username.*
 
-**NOTE**: *Update image functionality is quite basic and can be improved. For example, the user can crop the image, as well as the experience of uploading the image can be improved. However, that would require implementing some javascript logic for visual effects on the client side (web browser). This is not an obligatory part of this project.*  
+**NOTE**: *Update image functionality is quite basic and can be improved. For example, the user can crop the image, as well as the experience of uploading the image can be improved.*  
+
+*However, that would require implementing considerable amount of javascript logic on the client side (web browser) using external libraries, as well as python functions on the backend to be able to crop the image and save it.*  
+
+*This is not an obligatory part of this project.*  
+
 *For now, we will keep it simple and focus on the Django python backend.*
+
+
+## ***FRIENDS SYSTEM***
 
 
 
