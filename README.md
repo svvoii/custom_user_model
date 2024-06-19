@@ -1430,11 +1430,34 @@ So, in the `templates/header.html` file:
 </nav>
 ```
 
-**NOTE**: *The `<style..` tag is used to style the navigation bar for a better visual, it is still ugly.. but better. The styling will be done separately in any desirable way with bootstrap, manual css, etc.. This styling is temporary*
+5. Adding another separate file to render the footer in the `templates` directory:
 
-**NOTE**: *The `<form..>` tag is used to create a search bar in the navigation bar. The search bar will be used to search for other users by their username or email address*  
+So, for the same reason of better maintainability and readability, we will create a new file `templates/footer.html`:
 
-5. Modify the `layout.html` file to include the `header.html` file:
+```html
+<style>
+	footer {
+		background-color: #333;
+		color: white;
+		text-align: center;
+		position: fixed;
+		bottom: 0;
+		width: 100%;
+	}
+</style>
+
+<footer>
+	<p> &copy; 2024 - All rights reserved, no BS 
+	<span class="material-symbols-outlined">copyright</span>
+	</p>
+</footer>
+```
+
+**NOTE**: *The `<style..` tags in both header and footer are used to style the navigation bar and footer respectively for a better visual, it is still ugly.. but better. The styling shall be done separately in any desirable way with bootstrap (as minor project module) or manual css, etc.. Current styling is temporary*
+
+**NOTE**: *The `<form..>` tag in header is used to create a search bar in the navigation bar. The search bar will be used to search for other users by their username or email address*  
+
+5. Modify the `layout.html` file to include the `header.html` and `footer.html` files:
 
 *This is how the `templates/layout.html` file can look like at this point:*
 
@@ -1473,7 +1496,7 @@ So, in the `templates/header.html` file:
 </html>
 ```
 
-**NOTE**: *The `{% include 'header.html' %}` tag is used to include the `header.html` file in the `layout.html` file. This will display the navigation bar in the homepage*
+**NOTE**: *The `{% include 'header.html' %}` and `{% include 'footer.html' %}` syntax is used to include the `header.html` and `footer.html` files in the `layout.html` file. This will display the navigation bar on teh top and the footer at the bottom on the homepage*
 
 *At this point, we can now access the search page at `http://localhost:8000/search` and search for other users by their username or any characters in tehir username*  
 
