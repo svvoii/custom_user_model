@@ -42,6 +42,7 @@ AUTHENTICATION_BACKENDS = [
 INSTALLED_APPS = [
 	'homepage',	
 	'account',
+	'friends',
 
     'django.contrib.admin',
     'django.contrib.auth',

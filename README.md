@@ -1696,5 +1696,146 @@ urlpatterns = [
 
 ## ***FRIENDS SYSTEM***
 
+### ***ADDING FRIENDS APP***
+
+*The friends system will be managed by a separate app `friends` in the Django project. The friends app will be used to manage the friend requests, friends, and messages between friends.*  
+
+1. Creating a new app named `friends`:
+
+```bash
+python manage.py startapp friends
+```
+
+2. Adding the `friends` app to the `INSTALLED_APPS` list in the `main/settings.py` file:
+
+```python
+...
+INSTALLED_APPS = [
+	...
+	'friends',
+]
+...
+```
+
+3. Creating the `models.py` file in the `friends` app directory:
+
+*Here we will create the `FriendList` model to store the friends of the user, the `FriendRequest` model to store the friend requests.*  
+
+```python
+from django.db import models
+from django.conf import settings
+from django.utils import timezone
+
+class FriendList(models.Model):
+	# This is the account who owns the friend list (one user has one friend list)
+	user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='user')
+
+	# This is the list of friends (many users have many friends)
+	friends = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='friends')
+
+	def __str__(self):
+		return self.user.username
+	
+	def add_friend(self, account):
+		if not account in self.friends.all():
+			self.friends.add(account)
+			self.save()
+	
+	def remove_friend(self, account):
+		if account in self.friends.all():
+			self.friends.remove(account)
+
+	def unfriend(self, to_be_removed):
+		initiator_friends_list = self # This is the user who originally initiated the removal
+		initiator_friends_list.remove_friend(to_be_removed)
+
+		# Remove the initiator from the to_be_removed user's friend list
+		friend_list = FriendList.objects.get(user=to_be_removed)
+		friend_list.remove_friend(initiator_friends_list.user)	
+	
+	def is_mutual_friend(self, friend):
+		if friend in self.friends.all():
+			return True
+		return False
+
+
+class FriendRequest(models.Model):
+	sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='sender')
+	receiver = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='receiver')
+	is_active = models.BooleanField(blank=False, null=False, default=True)
+	timestamp = models.DateTimeField(auto_now_add=True)
+
+	def __str__(self):
+		return self.sender.username
+	
+	def accept(self):
+		receiver_friend_list = FriendList.objects.get(user=self.receiver)
+		if receiver_friend_list:
+			receiver_friend_list.add_friend(self.sender)
+			sender_friend_list = FriendList.objects.get(user=self.sender)
+			if sender_friend_list:
+				sender_friend_list.add_friend(self.receiver)
+				self.is_active = False
+				self.save()
+
+	def decline(self):
+		self.is_active = False
+		self.save()
+
+	def cancel(self):
+		self.is_active = False
+		self.save()
+```
+
+**NOTE**: *The `FriendList` table shall be created as soon as new user is created. So, we would need to add another function to the `Account` model later.*  
+
+
+4. Adding a class `FriendListAdmin` to the `friends/admin.py` file:
+
+*This class will be used to display the `FriendList` model in the Django admin page*
+
+```python
+from django.contrib import admin
+from friends.models import FriendList, FriendRequest
+
+class FriendListAdmin(admin.ModelAdmin):
+	list_filter = ['user']
+	list_display = ['user']
+	search_fields = ['user']
+	readonly_fields = ['user']
+
+	class Meta:
+		model = FriendList
+
+admin.site.register(FriendList, FriendListAdmin)
+
+
+class FriendRequestAdmin(admin.ModelAdmin):
+	list_filter = ['sender', 'receiver']
+	list_display = ['sender', 'receiver']
+	search_fields = ['sender__username', 'sender__email', 'receiver__username', 'receiver__email']
+
+	class Meta:
+		model = FriendRequest
+
+admin.site.register(FriendRequest, FriendRequestAdmin)
+```
+
+5. Making migrations and migrating the database:
+
+```bash
+python manage.py makemigrations
+
+python manage.py migrate
+```
+
+*At this point, the `FriendList` and `FriendRequest` models will be created in the database*  
+*Respective `Friend list` and `Friend requests` sections can be seen in the admin pannel*  
+
+
+### ***SENDING FRIEND REQUESTS***
+
+
+
 
 
