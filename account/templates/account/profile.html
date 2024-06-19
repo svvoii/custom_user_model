@@ -3,7 +3,7 @@
 
 {% block content %}
 
-<img src="{{ request.user.profile_image.url }}" alt="Profile Image" width="40" height="40">
+<img src="{{ request.user.profile_image.url }}" alt="Profile Image" width="64" height="64">
 <p>Email</p>
 {%  if is_self %}
 	<h5>{{ email }}</h5>

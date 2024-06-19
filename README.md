@@ -1512,13 +1512,13 @@ So, for the same reason of better maintainability and readability, creating a ne
 {% load static %}
 
 {% block content %}
+
 <div>
-	<img src="{{ form.initial.profile_image.url }}" alt="profile_image">
-	<div>Edit</div>
+	<img src="{{ form.initial.profile_image.url }}" alt="profile_image" width="128" height="128">
 </div>
-<form method="post">
+<form method="post" enctype="multipart/form-data">
 	{% csrf_token %}
-	<input type="file" name="profile_image_file_selector">
+	<input type="file" name="profile_image">
 	<h6>Email</h6>
 	<input type="email" name="email" id="id_input_email" placeholder="Email address" required autofocus value={{ form.initial.email }}> <h6 class="mt-4 field-heading">Username</h6>
 	<input type="text" name="username" id="id_input_username" placeholder="Username" required value="{{ form.initial.username }}">
@@ -1546,7 +1546,9 @@ So, for the same reason of better maintainability and readability, creating a ne
 	{% endif %}
 
 	<button type="submit">Save</button>
+	
 </form>
+
 {% endblock content %}
 ```
 
@@ -1681,9 +1683,10 @@ urlpatterns = [
 
 *This will allow us to access the edit profile page at `http://localhost:8000/profile/edit`. From the profile page, we can click on the `Update` link to access the edit profile page*  
 
+*This shall allow us to update the profile image, email address, username.*
 
-### ***CROP PROFILE IMAGE FUNCTIONALITY***
-
+**NOTE**: *Update image functionality is quite basic and can be improved. For example, the user can crop the image, as well as the experience of uploading the image can be improved. However, that would require implementing some javascript logic for visual effects on the client side (web browser). This is not an obligatory part of this project.*  
+*For now, we will keep it simple and focus on the Django backend.*
 
 
 

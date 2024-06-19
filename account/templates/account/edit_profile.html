@@ -4,12 +4,11 @@
 {% block content %}
 
 <div>
-	<img src="{{ form.initial.profile_image.url }}" alt="profile_image">
-	<div>Edit</div>
+	<img src="{{ form.initial.profile_image.url }}" alt="profile_image" width="128" height="128">
 </div>
-<form method="post">
+<form method="post" enctype="multipart/form-data">
 	{% csrf_token %}
-	<input type="file" name="profile_image_file_selector">
+	<input type="file" name="profile_image">
 	<h6>Email</h6>
 	<input type="email" name="email" id="id_input_email" placeholder="Email address" required autofocus value={{ form.initial.email }}> <h6 class="mt-4 field-heading">Username</h6>
 	<input type="text" name="username" id="id_input_username" placeholder="Username" required value="{{ form.initial.username }}">
