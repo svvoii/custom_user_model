@@ -1432,7 +1432,7 @@ So, in the `templates/header.html` file:
 
 5. Adding another separate file to render the footer in the `templates` directory:
 
-So, for the same reason of better maintainability and readability, we will create a new file `templates/footer.html`:
+So, for the same reason of better maintainability and readability, creating a new file `templates/footer.html`:
 
 ```html
 <style>
@@ -1499,5 +1499,191 @@ So, for the same reason of better maintainability and readability, we will creat
 **NOTE**: *The `{% include 'header.html' %}` and `{% include 'footer.html' %}` syntax is used to include the `header.html` and `footer.html` files in the `layout.html` file. This will display the navigation bar on teh top and the footer at the bottom on the homepage*
 
 *At this point, we can now access the search page at `http://localhost:8000/search` and search for other users by their username or any characters in tehir username*  
+
+
+### ***EDIT ACCOUNT FUNCTIONALITY***
+
+*This will allow the user to edit their account information, such as the email address, username, and profile image. The user will be able to update their account information in the edit account page*  
+
+1. Creating the `edit_profile.html` file in the `account/templates/account` directory:
+
+```html
+{% extends 'layout.html' %}
+{% load static %}
+
+{% block content %}
+<div>
+	<img src="{{ form.initial.profile_image.url }}" alt="profile_image">
+	<div>Edit</div>
+</div>
+<form method="post">
+	{% csrf_token %}
+	<input type="file" name="profile_image_file_selector">
+	<h6>Email</h6>
+	<input type="email" name="email" id="id_input_email" placeholder="Email address" required autofocus value={{ form.initial.email }}> <h6 class="mt-4 field-heading">Username</h6>
+	<input type="text" name="username" id="id_input_username" placeholder="Username" required value="{{ form.initial.username }}">
+	<label>
+		<input type="checkbox" name="hide_email" id="id_input_hide_email"
+		{% if form.initial.hide_email %}
+			checked
+		{%endif%}>
+		Hide Email
+	</label>
+
+	{% for field in form %}
+	<p>
+		{% for error in field.errors %}
+			<p style="color: red">{{ error }}</p>
+		{% endfor %}
+	</p>
+	{% endfor %}
+
+	{% if form.non_field_errors %}
+		<div style="color: red">
+		<p>{{ form.non_field_errors }}</p>
+		</div>
+
+	{% endif %}
+
+	<button type="submit">Save</button>
+</form>
+{% endblock content %}
+```
+
+2. Adding `AccountUpdateForm` class to the `account/forms.py` file:
+
+```python
+...
+class AccountUpdateForm(forms.ModelForm):
+	class Meta:
+		model = Account
+		fields = ('email', 'username', 'profile_image', 'hide_email')
+	
+	def clean_email(self):
+		email = self.cleaned_data['email']
+		try:
+			account = Account.objects.exclude(pk=self.instance.pk).get(email=email)
+		except Account.DoesNotExist:
+			return email
+		raise forms.ValidationError(f'Email {email} is already in use.')
+
+	def clean_username(self):
+		username = self.cleaned_data['username']
+		try:
+			account = Account.objects.exclude(pk=self.instance.pk).get(username=username)
+		except Account.DoesNotExist:
+			return username
+		raise forms.ValidationError(f'Username {username} is already in use.')
+
+	def save(self, commit=True):
+		account = super(AccountUpdateForm, self).save(commit=False)
+		account.email = self.cleaned_data['email']
+		account.username = self.cleaned_data['username']
+		account.profile_image = self.cleaned_data['profile_image']
+		account.hide_email = self.cleaned_data['hide_email']
+		if commit:
+			account.save()
+		return account
+```
+
+3. Adding the `edit_profile_view` function to the `account/views.py` file:
+
+```python
+...
+from account.forms import RegistrationForm, AccountAuthenticationForm, AccountUpdateForm # ..importing the AccountUpdateForm
+...
+def edit_profile_view(request, *args, **kwargs):
+	if not request.user.is_authenticated:
+		return redirect('login')
+
+	user_id = kwargs.get('user_id')
+	try:
+		account = Account.objects.get(pk=user_id)
+	except Account.DoesNotExist:
+		return HttpResponse("User not found.")
+
+	if account.pk != request.user.pk:
+		return HttpResponse("You cannot edit someone else's profile.")
+
+	context = {}
+
+	if request.POST:
+		form = AccountUpdateForm(request.POST, request.FILES, instance=request.user)
+		if form.is_valid():
+			form.save()
+			return redirect('account:profile', user_id=account.pk)
+			# context['success_message'] = "Updated"
+		else:
+			form = AccountUpdateForm(
+				request.POST,
+				instance=request.user,
+				initial={
+					'id': account.pk,
+					'email': account.email,
+					'username': account.username,
+					'profile_image': account.profile_image,
+					'hide_email': account.hide_email,
+				}
+			)
+	else:
+		form = AccountUpdateForm(
+			initial={
+				'id': account.pk,
+				'email': account.email,
+				'username': account.username,
+				'profile_image': account.profile_image,
+				'hide_email': account.hide_email,
+			}
+		)
+
+	context['form'] = form
+	context['DATA_UPLOAD_MAX_MEMORY_SIZE'] = settings.DATA_UPLOAD_MAX_MEMORY_SIZE
+
+	return render(request, 'account/edit_profile.html', context)
+``` 
+
+4. Adding a global variable to the `main/settings.py` file:
+
+*This is used to limit the size of the profile image that the user can upload to the server.*
+
+```python
+...
+# This is to set a global variable for the maximum size od the uploaded profile image (5MB)
+DATA_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
+``` 
+
+5. Adding the reference to the `edit_account_view` function in the `account/urls.py` file:
+
+```python
+...
+from account.views import profile_view, edit_profile_view # adding the edit_profile_view function
+...
+
+urlpatterns = [
+	...
+	path('<user_id>/edit/', edit_profile_view, name='edit'),
+]
+```
+
+6. Adding the link to the edit profile page in the `profile.html` file in the `account/templates/account` directory:
+
+*In order to access the edit profile page, we need to add a link to the edit profile page in the profile page. In there looking for `<a>` tag with `Update` text:* 
+
+```html
+...
+<!-- If Auth user is viewing their own profile -->
+{% if is_self %}
+	<a href="{% url 'account:edit' user_id=id %}">Update</a></br>
+	...
+{% endif %}
+...
+```
+
+*This will allow us to access the edit profile page at `http://localhost:8000/profile/edit`. From the profile page, we can click on the `Update` link to access the edit profile page*  
+
+
+### ***CROP PROFILE IMAGE FUNCTIONALITY***
+
+
 
 

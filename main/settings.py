@@ -146,3 +146,6 @@ BASE_URL = "http://127.0.0.1:8000" # ..for the base URL of the project. Will be 
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# This is to set a global variable for the maximum size od the uploaded profile image (5MB)
+DATA_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024

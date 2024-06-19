@@ -1,10 +1,11 @@
 from django.urls import path
-from account.views import profile_view
+from account.views import profile_view, edit_profile_view
 
 app_name = 'account'
 
 urlpatterns = [
 	path('<user_id>/', profile_view, name='profile'),
+	path('<user_id>/edit/', edit_profile_view, name='edit'),
 ]
 
 # `<user_id>/` is a dynamic URL pattern that will be passed to the `profile_view` function in the `account/views.py` file. 
