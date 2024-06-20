@@ -1,3 +1,77 @@
-from django.shortcuts import render
+from django.http import HttpResponse
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from friends.forms import SendFriendRequestForm, HandleFriendRequestForm
+from friends.models import FriendRequest
 
-# Create your views here.
+
+def send_friend_request_view(request):
+	if request.method == 'POST':
+		form = SendFriendRequestForm(request.POST)
+		if form.is_valid():
+			receiver = form.cleaned_data.get('receiver')
+			FriendRequest.objects.create(sender=request.user, receiver=receiver)
+			messages.success(request, f'Friend request sent to {receiver.username}')
+			return redirect('profile')
+		else:
+			return HttpResponse('Invalid form data')
+	else:
+		messages.error(request, 'Debug: This is a POST-only endpoint')
+		return redirect('profile')
+
+def accept_friend_request_view(request):
+	if request.method == 'POST':
+		form = HandleFriendRequestForm(request.POST)
+		if form.is_valid():
+			friend_request = form.cleaned_data.get('friend_request_id')
+			friend_request.accept()
+			messages.success(request, f'You are now friends with {friend_request.sender.username}')
+			return redirect('profile')
+		else:
+			return HttpResponse('Invalid form data')
+	else:
+		messages.error(request, 'Debug: This is a POST-only endpoint')
+		return redirect('profile')
+
+def decline_friend_request_view(request):
+	if request.method == 'POST':
+		form = HandleFriendRequestForm(request.POST)
+		if form.is_valid():
+			friend_request = form.cleaned_data.get('friend_request_id')
+			friend_request.decline()
+			messages.success(request, f'Friend request declined')
+			return redirect('profile')
+		else:
+			return HttpResponse('Invalid form data')
+	else:
+		messages.error(request, 'Debug: This is a POST-only endpoint')
+		return redirect('profile')
+
+def cancel_friend_request_view(request):
+	if request.method == 'POST':
+		form = HandleFriendRequestForm(request.POST)
+		if form.is_valid():
+			friend_request = form.cleaned_data.get('friend_request_id')
+			friend_request.cancel()
+			messages.success(request, f'Friend request cancelled')
+			return redirect('profile')
+		else:
+			return HttpResponse('Invalid form data')
+	else:
+		messages.error(request, 'Debug: This is a POST-only endpoint')
+		return redirect('profile')
+
+def remove_friend_view(request):
+	if request.method == 'POST':
+		form = HandleFriendRequestForm(request.POST)
+		if form.is_valid():
+			friend_request = form.cleaned_data.get('friend_request_id')
+			friend_request.cancel()
+			messages.success(request, f'Friend removed')
+			return redirect('profile')
+		else:
+			return HttpResponse('Invalid form data')
+	else:
+		messages.error(request, 'Debug: This is a POST-only endpoint')
+		return redirect('profile')
+

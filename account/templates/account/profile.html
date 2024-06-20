@@ -3,6 +3,14 @@
 
 {% block content %}
 
+{% if messages %}
+	{% for message in messages %}
+		<li{% if message.tags %} class="{{ message.tags }}"{% endif %}>
+			{{ message }}
+		</li>
+	{% endfor %}
+{% endif %}
+
 <img src="{{ request.user.profile_image.url }}" alt="Profile Image" width="64" height="64">
 <p>Email</p>
 {%  if is_self %}
@@ -29,8 +37,16 @@
 	{% if request_sent == 2 %}
 	<div>
 		<span>Accept Friend Request</span>
-		<span id="id_cancel_{{id}}" onclick='triggerDeclineFriendRequest("{{ pending_friend_request_id }}")'>cancel</span>
-		<span id="id_confirm_{{id}}" onclick='triggerAcceptFriendRequest("{{ pending_friend_request_id }}")'>check</span>
+		<form method="POST" action="{% url 'friends:accept_friend_request' %}">
+			{% csrf_token %}
+			<input type="hidden" name="friend_request_id" value="{{ pending_friend_request_id }}">
+			<input type="submit" value="Accept">
+		</form>
+		<form method="POST" action="{% url 'friends:decline_friend_request' %}">
+			{% csrf_token %}
+			<input type="hidden" name="friend_request_id" value="{{ pending_friend_request_id }}">
+			<input type="submit" value="Decline">
+		</form>
 	</div>
 	{% endif %}
 
@@ -38,17 +54,30 @@
 	{% if is_friend == False and is_self == False %}
 		<!-- You sent them a request -->
 		{% if request_sent == 1 %}
-			<button> Cancel Friend Request </button></br>
+			<form method="POST" action="{% url 'friends:cancel_friend_request' %}">
+				{% csrf_token %}
+				<input type="hidden" name="friend_request_id" value="{{ pending_friend_request_id }}">
+				<input type="submit" value="Cancel Friend Request">
+			</form>
 		{% endif %}
+
 		<!-- No requests have been sent -->
 		{% if request_sent == 0 %}
-			<button> Send Friend Request </button></br>
+			<form method="POST" action="{% url 'friends:send_friend_request' %}">
+				{% csrf_token %}
+				<input type="hidden" name="receiver_id" value="{{ id }}">
+				<input type="submit" value="Send Friend Request">
+			</form>
 		{% endif %}
 	{% endif %}
 		
 	{% if is_friend %}
 		<button> Friends </button>
-		<a href="#" onclick="removeFriend('{{ id }}', onFriendRemoved)">Unfriend</a>
+		<form method="POST" action="{% url 'friends:remove_friend' %}">
+			{% csrf_token %}
+			<input type="hidden" name="friend_id" value="{{ id }}">
+			<input type="submit" value="Unfriend">
+		</form>
 	{% endif %}
 	
 	<!-- Friend list link --><br>

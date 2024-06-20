@@ -2063,32 +2063,248 @@ def profile_view(request, *args, **kwargs):
 
 1. Creating the forms which correspond to each of the friend request actions in the `friends/forms.py` file:
 
+*First creating `friends/forms.py` file in the `friends` app directory:*  
+
 ```python
+from django import forms
+from friends.models import FriendRequest
+from django.contrib.auth import get_user_model
+
+
+User = get_user_model()
+
+class SendFriendRequestForm(forms.Form):
+	receiver = forms.ModelChoiceField(queryset=User.objects.all())
+
+
+class HandleFriendRequestForm(forms.Form):
+	friend_request_id = forms.ModelChoiceField(queryset=FriendRequest.objects.all())
+
 ```
 
-2. Including the forms to the `profile.html` file in the `account/templates/account` directory:
+2. Adding respective views to the `friends/views.py` file:
+
+```python
+from django.http import HttpResponse
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from friends.forms import SendFriendRequestForm, HandleFriendRequestForm
+from friends.models import FriendRequest
+
+
+def send_friend_request_view(request):
+	if request.method == 'POST':
+		form = SendFriendRequestForm(request.POST)
+		if form.is_valid():
+			receiver = form.cleaned_data.get('receiver')
+			FriendRequest.objects.create(sender=request.user, receiver=receiver)
+			messages.success(request, f'Friend request sent to {receiver.username}')
+			return redirect('profile')
+		else:
+			return HttpResponse('Invalid form data')
+	else:
+		messages.error(request, 'Debug: This is a POST-only endpoint')
+		return redirect('profile')
+
+def accept_friend_request_view(request):
+	if request.method == 'POST':
+		form = HandleFriendRequestForm(request.POST)
+		if form.is_valid():
+			friend_request = form.cleaned_data.get('friend_request_id')
+			friend_request.accept()
+			messages.success(request, f'You are now friends with {friend_request.sender.username}')
+			return redirect('profile')
+		else:
+			return HttpResponse('Invalid form data')
+	else:
+		messages.error(request, 'Debug: This is a POST-only endpoint')
+		return redirect('profile')
+
+def decline_friend_request_view(request):
+	if request.method == 'POST':
+		form = HandleFriendRequestForm(request.POST)
+		if form.is_valid():
+			friend_request = form.cleaned_data.get('friend_request_id')
+			friend_request.decline()
+			messages.success(request, f'Friend request declined')
+			return redirect('profile')
+		else:
+			return HttpResponse('Invalid form data')
+	else:
+		messages.error(request, 'Debug: This is a POST-only endpoint')
+		return redirect('profile')
+
+def cancel_friend_request_view(request):
+	if request.method == 'POST':
+		form = HandleFriendRequestForm(request.POST)
+		if form.is_valid():
+			friend_request = form.cleaned_data.get('friend_request_id')
+			friend_request.cancel()
+			messages.success(request, f'Friend request cancelled')
+			return redirect('profile')
+		else:
+			return HttpResponse('Invalid form data')
+	else:
+		messages.error(request, 'Debug: This is a POST-only endpoint')
+		return redirect('profile')
+
+def remove_friend_view(request):
+	if request.method == 'POST':
+		form = HandleFriendRequestForm(request.POST)
+		if form.is_valid():
+			friend_request = form.cleaned_data.get('friend_request_id')
+			friend_request.cancel()
+			messages.success(request, f'Friend removed')
+			return redirect('profile')
+		else:
+			return HttpResponse('Invalid form data')
+	else:
+		messages.error(request, 'Debug: This is a POST-only endpoint')
+		return redirect('profile')
+
+```
+**NOTE: LIKELY THE LOGIC IN THESE VIEWS MUST BE CHANGED SINCE THE SEND FRIEND REQUEST WONT WORK AS EXPECTED**
+
+3. Including the forms to the `profile.html` file in the `account/templates/account` directory:
 
 ```html
+{% extends 'layout.html' %}
+{% load static %}
+
+{% block content %}
+
+{% if messages %}
+	{% for message in messages %}
+		<li{% if message.tags %} class="{{ message.tags }}"{% endif %}>
+			{{ message }}
+		</li>
+	{% endfor %}
+{% endif %}
+
+<img src="{{ request.user.profile_image.url }}" alt="Profile Image" width="64" height="64">
+<p>Email</p>
+{%  if is_self %}
+	<h5>{{ email }}</h5>
+{% else %}
+	{% if hide_email %}
+		<h5>**********</h5>
+	{% else %}
+		<h5>{{ email }}</h5>
+	{% endif %}
+{% endif %}
+<p>Username</p>
+<h5>{{ username }}</h5>
+
+<!-- If Auth user is viewing their own profile -->
+{% if is_self %}
+	<a href="{% url 'account:edit' user_id=id %}">Update</a></br>
+	<a href="{% url 'password_change' %}">Change password</a></br>
+{% endif %}
+
+{% if request.user.is_authenticated %}
+
+	<!-- THEM to YOU -->
+	{% if request_sent == 2 %}
+	<div>
+		<span>Accept Friend Request</span>
+		<form method="POST" action="{% url 'friends:accept_friend_request' %}">
+			{% csrf_token %}
+			<input type="hidden" name="friend_request_id" value="{{ pending_friend_request_id }}">
+			<input type="submit" value="Accept">
+		</form>
+		<form method="POST" action="{% url 'friends:decline_friend_request' %}">
+			{% csrf_token %}
+			<input type="hidden" name="friend_request_id" value="{{ pending_friend_request_id }}">
+			<input type="submit" value="Decline">
+		</form>
+	</div>
+	{% endif %}
+
+	<!-- Cancel Friend Request / Send Friend Request / Remove Friend -->
+	{% if is_friend == False and is_self == False %}
+		<!-- You sent them a request -->
+		{% if request_sent == 1 %}
+			<form method="POST" action="{% url 'friends:cancel_friend_request' %}">
+				{% csrf_token %}
+				<input type="hidden" name="friend_request_id" value="{{ pending_friend_request_id }}">
+				<input type="submit" value="Cancel Friend Request">
+			</form>
+		{% endif %}
+
+		<!-- No requests have been sent -->
+		{% if request_sent == 0 %}
+			<form method="POST" action="{% url 'friends:send_friend_request' %}">
+				{% csrf_token %}
+				<input type="hidden" name="receiver_id" value="{{ id }}">
+				<input type="submit" value="Send Friend Request">
+			</form>
+		{% endif %}
+	{% endif %}
+		
+	{% if is_friend %}
+		<button> Friends </button>
+		<form method="POST" action="{% url 'friends:remove_friend' %}">
+			{% csrf_token %}
+			<input type="hidden" name="friend_id" value="{{ id }}">
+			<input type="submit" value="Unfriend">
+		</form>
+	{% endif %}
+	
+	<!-- Friend list link --><br>
+	<a href="#">
+		<span> contact_page </span></br>
+		<span> Friends ({{ friends|length }}) </span></br>
+	</a>
+
+	{% if friend_request %}
+	<!-- Friend requests -->
+		<a href="#">
+			<span> person_add </span></br>
+			<span> Friend Requests ({{ friend_request|length }}) </span></br>
+		</a>
+	{% endif %}
+
+	{% if is_friend %}
+		<div onclick="createOrReturnPrivateChat('{{ id }}')">
+			<span> message </span></br>
+			<span> Message </span></br>
+		</div>
+	{% endif %}
+
+{% endif %}
+	
+{% endblock content %}
 ```
 
-*Once the forms are submitted it will send a POST request to the specified view..
-
-3. Adding the `send_friend_request_view` function to the `friends/views.py` file:
+4. Creating the `friends/urls.py` file in the `friends` app directory:
 
 ```python
+from django.urls import path
+from . import views
+
+app_name = 'friends'
+
+urlpatterns = [
+	path('send-friend-request/', views.send_friend_request_view, name='send_friend_request'),
+	path('accept-friend-request/', views.accept_friend_request_view, name='accept_friend_request'),
+	path('decline-friend-request/', views.decline_friend_request_view, name='decline_friend_request'),
+	path('cancel-friend-request/', views.cancel_friend_request_view, name='cancel_friend_request'),
+	path('remove-friend/', views.remove_friend_view, name='remove_friend'),
+]
 ```
 
-4. Adding the reference to the `send_friend_request_view` function in the `friends/urls.py` file:
+5. Adding the reference to the `friends` app urls in the `main/urls.py` file:
 
 ```python
+...
+urlpatterns = [
+	...
+	path('friends/', include('friends.urls', namespace='friends')),
+	...
+]
 ```
 
-5. Adding the link to the send friend request form in the `profile.html` file in the `account/templates/account` directory:
-
-```html
-```
-
-*This will allow us to send a friend request to another user by clicking on the `Send Friend Request` button on the profile page*  	
+**NOTE: THIS VERSION IS NOT WORKING AS EXPECTED.. YET..**
 
 
 

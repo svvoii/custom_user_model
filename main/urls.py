@@ -28,6 +28,7 @@ urlpatterns = [
 	path('', home_view, name='home'),
 	path('admin/', admin.site.urls),
 	path('account/', include('account.urls', namespace='account')),
+	path('friends/', include('friends.urls', namespace='friends')),
 	path('login/', login_view, name='login'),
 	path('logout/', logout_view, name='logout'),
 	path('register/', register_view, name='register'),
