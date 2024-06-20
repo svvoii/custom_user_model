@@ -1420,8 +1420,12 @@ So, in the `templates/header.html` file:
 	</form>
 
 	{% if request.user.is_authenticated %}
-		<a href="{% url 'account:profile' user_id=request.user.id %}" title="PROFILE"> <img src="{{ request.user.profile_image.url }}" alt="LOGO" width="32" height="32"></a>
-		<a href="{% url 'logout' %}" title="LOGOUT"> <span class="material-symbols-outlined">logout</span>Logout</a>
+		<a href="{% url 'account:profile' user_id=request.user.id %}" title="PROFILE"> <img src="{{ request.user.profile_image.url }}" alt="LOGO" width="32" height="32">
+			{{ request.user.username }}
+		</a>
+		<a href="{% url 'logout' %}" title="LOGOUT"> <span class="material-symbols-outlined">logout</span>
+			Logout
+		</a>
 	{% else %}
 		<a href="{% url 'login' %}" title="LOGIN"> <span class="material-symbols-outlined">login</span>Login</a>
 		<a href="{% url 'register' %}" title="REGISTER"> <span class="material-symbols-outlined">person_add</span>Register</a>
@@ -2056,6 +2060,35 @@ def profile_view(request, *args, **kwargs):
 
 
 #### ***SENDING FRIEND REQUESTS FUNCTIONALITY***  
+
+1. Creating the forms which correspond to each of the friend request actions in the `friends/forms.py` file:
+
+```python
+```
+
+2. Including the forms to the `profile.html` file in the `account/templates/account` directory:
+
+```html
+```
+
+*Once the forms are submitted it will send a POST request to the specified view..
+
+3. Adding the `send_friend_request_view` function to the `friends/views.py` file:
+
+```python
+```
+
+4. Adding the reference to the `send_friend_request_view` function in the `friends/urls.py` file:
+
+```python
+```
+
+5. Adding the link to the send friend request form in the `profile.html` file in the `account/templates/account` directory:
+
+```html
+```
+
+*This will allow us to send a friend request to another user by clicking on the `Send Friend Request` button on the profile page*  	
 
 
 
