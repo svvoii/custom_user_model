@@ -1835,6 +1835,228 @@ python manage.py migrate
 
 ### ***SENDING FRIEND REQUESTS***
 
+*This will be the logic to view the profile page from the friends perspective:*
+--> `is_self`: 
+`True`: *..user is viewing their own profile page*  
+`False`: *..user is viewing the profile page of another user*  
+--> `is_friend`:  
+`True`: *..user is viewing the profile page of a friend*  
+`False`: *..user is not viewing the profile page of a NON-friend*   
+- `NO_REQUEST_SENT`: *..no friend request has been sent to this user*
+- `SENT_BY_YOU`: *..you have sent a friend request to this user*  
+- `THEY_SENT_TO_YOU`: *..this user has sent a friend request to you*  
+
+So, there will be 5 possible states of the profile page:  
+1. `is_self` = `True` - *..user is viewing their own profile page*  
+2. `is_friend` = `True` - *..user is viewing the profile page of a friend*  
+3. `is_friend` = `False` = `NO_REQUEST_SENT` - *..user is not viewing the profile page of a NON-friend*  
+4. `is_friend` = `False` = `SENT_BY_YOU` - *..you have sent a friend request to this user*  
+5. `is_friend` = `False` = `THEY_SENT_TO_YOU` - *..this user has sent a friend request to you*  
+
+
+#### ***ADDING FRIEND REQUEST FUNCTIONALITY***
+
+1. Creating new file in `friends` app directory named `friend_request_status.py`:
+
+in `friends/friend_request_status.py` file:  
+
+```python
+from enum import Enum
+
+class FriendRequestStatus(Enum):
+	NO_REQUEST_SENT = 0
+	SENT_BY_YOU = 1
+	THEY_SENT_TO_YOU = 2
+```
+
+2. Creating a utility function to get the friend request status in the `friends/utils.py` file:
+
+```python
+from frineds.models import FriendRequest
+
+def get_friend_request_or_false(sender, receiver):
+	try:
+		friend_request = FriendRequest.objects.get(sender=sender, receiver=receiver, is_active=True)
+		return friend_request
+	except FriendRequest.DoesNotExist:
+		return False
+
+```
+
+3. Adding / changing the `profile_view` function in the `account/views.py` file:
+
+*So, in the `account/views.py` file, we will add the logic to get the friend request status in the `profile_view` function*  
+
+*This is how the `profile_view` function can look like at this point:*  
+
+```python
+...
+from friends.utils import get_friend_request_or_false
+from friends.friend_request_status import FriendRequestStatus
+from friends.models import FriendList, FriendRequest
+...
+def profile_view(request, *args, **kwargs):
+	content = {}
+	user_id = kwargs.get('user_id')
+
+	try:
+		account = Account.objects.get(pk=user_id)
+	except Account.DoesNotExist:
+		return HttpResponse("User not found.")
+
+	if account:
+		content['id'] = account.id
+		content['email'] = account.email
+		content['username'] = account.username
+		content['profile_image'] = account.profile_image
+		content['hide_email'] = account.hide_email
+
+		# determine the relationship status between the logged-in user and the user whose profile is being viewed
+		try:
+			friend_list = FriendList.objects.get(user=account)
+		except FriendList.DoesNotExist:
+			friend_list = FriendList(user=account)
+			friend_list.save()
+		friends = friend_list.friends.all()
+		content['friends'] = friends
+
+		is_self = True
+		is_friend = False
+		user = request.user
+		request_sent = FriendRequestStatus.NO_REQUEST_SENT.value
+		friend_request = None
+		
+		# This check says : `If you are not looking at your own profile, then..`
+		if user.is_authenticated and user != account:
+			is_self = False
+			if friends.filter(pk=user.id):
+				is_friend = True
+			else:
+				is_friend = False
+				# case 1: the user is not a friend and request status = `THEY_SENT_YOU`
+				if get_friend_request_or_false(sender=account, receiver=user) != False:
+					request_sent = FriendRequestStatus.THEY_SENT_TO_YOU.value
+					content['pending_friend_request_id'] = get_friend_request_or_false(sender=account, receiver=user).id
+				# case 2: the user is not a friend and request status = `YOU_SENT_TO_THEM`	
+				elif get_friend_request_or_false(sender=user, receiver=account) != False:
+					request_sent = FriendRequestStatus.YOU_SENT_TO_THEM.value
+				# case 3: the user is not a friend and request status = `NO_REQUEST_SENT`
+				else:
+					request_sent = FriendRequestStatus.NO_REQUEST_SENT.value
+
+		# This check means : `If you are not logged in, then..`
+		elif not user.is_authenticated:
+			is_self = False
+		
+		# This check means : `If you are looking at your own profile, then..`
+		else:
+			try:
+				friend_request = FriendRequest.objects.filter(receiver=user, is_active=True)
+			except:
+				friend_request = None
+
+		content['is_self'] = is_self
+		content['is_friend'] = is_friend
+		content['BASE_URL'] = settings.BASE_URL
+		content['request_sent'] = request_sent
+		content['friend_request'] = friend_request
+
+	return render(request, 'account/profile.html', content)
+
+```
+
+4. Updating the `profile.html` file in the `account/templates/account` directory:  
+
+*This is how the `profile.html` file can look like at this point:*  
+
+```html
+{% extends 'layout.html' %}
+{% load static %}
+
+{% block content %}
+
+<img src="{{ request.user.profile_image.url }}" alt="Profile Image" width="64" height="64">
+<p>Email</p>
+{%  if is_self %}
+	<h5>{{ email }}</h5>
+{% else %}
+	{% if hide_email %}
+		<h5>**********</h5>
+	{% else %}
+		<h5>{{ email }}</h5>
+	{% endif %}
+{% endif %}
+<p>Username</p>
+<h5>{{ username }}</h5>
+
+<!-- If Auth user is viewing their own profile -->
+{% if is_self %}
+	<a href="{% url 'account:edit' user_id=id %}">Update</a></br>
+	<a href="{% url 'password_change' %}">Change password</a></br>
+{% endif %}
+
+{% if request.user.is_authenticated %}
+
+	<!-- THEM to YOU -->
+	{% if request_sent == 2 %}
+	<div>
+		<span>Accept Friend Request</span>
+		<span id="id_cancel_{{id}}" onclick='triggerDeclineFriendRequest("{{ pending_friend_request_id }}")'>cancel</span>
+		<span id="id_confirm_{{id}}" onclick='triggerAcceptFriendRequest("{{ pending_friend_request_id }}")'>check</span>
+	</div>
+	{% endif %}
+
+	<!-- Cancel Friend Request / Send Friend Request / Remove Friend -->
+	{% if is_friend == False and is_self == False %}
+		<!-- You sent them a request -->
+		{% if request_sent == 1 %}
+			<button> Cancel Friend Request </button></br>
+		{% endif %}
+		<!-- No requests have been sent -->
+		{% if request_sent == 0 %}
+			<button> Send Friend Request </button></br>
+		{% endif %}
+	{% endif %}
+		
+	{% if is_friend %}
+		<button> Friends </button>
+		<a href="#" onclick="removeFriend('{{ id }}', onFriendRemoved)">Unfriend</a>
+	{% endif %}
+	
+	<!-- Friend list link --><br>
+	<a href="#">
+		<span> contact_page </span></br>
+		<span> Friends ({{ friends|length }}) </span></br>
+	</a>
+
+	{% if friend_request %}
+	<!-- Friend requests -->
+		<a href="#">
+			<span> person_add </span></br>
+			<span> Friend Requests ({{ friend_request|length }}) </span></br>
+		</a>
+	{% endif %}
+
+	{% if is_friend %}
+		<div onclick="createOrReturnPrivateChat('{{ id }}')">
+			<span> message </span></br>
+			<span> Message </span></br>
+		</div>
+	{% endif %}
+
+{% endif %}
+	
+{% endblock content %}
+
+```
+
+*At this point, we can see the profile page given its current state. We also can visit the profile page of another user and see the appropriate friend request button.*  
+
+*Next step would be to add the functionality and logic to send the friend request*  
+
+
+#### ***SENDING FRIEND REQUESTS FUNCTIONALITY***  
+
 
 
 

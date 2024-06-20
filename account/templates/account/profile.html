@@ -26,7 +26,7 @@
 {% if request.user.is_authenticated %}
 
 	<!-- THEM to YOU -->
-	{% if request_sent == 0 %}
+	{% if request_sent == 2 %}
 	<div>
 		<span>Accept Friend Request</span>
 		<span id="id_cancel_{{id}}" onclick='triggerDeclineFriendRequest("{{ pending_friend_request_id }}")'>cancel</span>
@@ -41,7 +41,7 @@
 			<button> Cancel Friend Request </button></br>
 		{% endif %}
 		<!-- No requests have been sent -->
-		{% if request_sent == -1 %}
+		{% if request_sent == 0 %}
 			<button> Send Friend Request </button></br>
 		{% endif %}
 	{% endif %}
@@ -51,21 +51,19 @@
 		<a href="#" onclick="removeFriend('{{ id }}', onFriendRemoved)">Unfriend</a>
 	{% endif %}
 	
-	<!-- TODO -->
-	<!-- Friend list link -->
+	<!-- Friend list link --><br>
 	<a href="#">
 		<span> contact_page </span></br>
-		<span> Friends (0) </span></br>
+		<span> Friends ({{ friends|length }}) </span></br>
 	</a>
 
-	<!-- TODO -->
-	{#% if friend_requests %#}
+	{% if friend_request %}
 	<!-- Friend requests -->
 		<a href="#">
 			<span> person_add </span></br>
-			<span> Friend Requests (0) </span></br>
+			<span> Friend Requests ({{ friend_request|length }}) </span></br>
 		</a>
-	{#% endif %#}
+	{% endif %}
 
 	{% if is_friend %}
 		<div onclick="createOrReturnPrivateChat('{{ id }}')">
