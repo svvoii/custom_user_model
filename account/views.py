@@ -117,10 +117,17 @@ def profile_view(request, *args, **kwargs):
 				# case 1: the user is not a friend and request status = `THEY_SENT_YOU`
 				if get_friend_request_or_false(sender=account, receiver=user) != False:
 					request_sent = FriendRequestStatus.THEY_SENT_TO_YOU.value
-					content['pending_friend_request_id'] = get_friend_request_or_false(sender=account, receiver=user).id
+					# DEBUG #
+					pending_friend_request =  get_friend_request_or_false(sender=account, receiver=user).id
+					print(f'pending_friend_request_id: {pending_friend_request}')
+					pending_friend_request_id = pending_friend_request.id
+					print(f'pending_friend_request_id: {pending_friend_request_id}')
+					content['pending_friend_request_id'] = pending_friend_request_id
+					# # # # #
+					# content['pending_friend_request_id'] = get_friend_request_or_false(sender=account, receiver=user).id
 				# case 2: the user is not a friend and request status = `YOU_SENT_TO_THEM`	
 				elif get_friend_request_or_false(sender=user, receiver=account) != False:
-					request_sent = FriendRequestStatus.YOU_SENT_TO_THEM.value
+					request_sent = FriendRequestStatus.SENT_BY_YOU.value
 				# case 3: the user is not a friend and request status = `NO_REQUEST_SENT`
 				else:
 					request_sent = FriendRequestStatus.NO_REQUEST_SENT.value
