@@ -8,7 +8,7 @@ from account.models import Account
 
 def send_friend_request_view(request):
 	# DEBUG #
-	print(request.POST)
+	# print(request.POST)
 	# # # # #
 	if request.method == 'POST':
 		form = SendFriendRequestForm(request.POST)
@@ -26,7 +26,7 @@ def send_friend_request_view(request):
 
 def cancel_friend_request_view(request):
 	# DEBUG #
-	print(request.POST)
+	# print(request.POST)
 	# # # # #
 	if request.method == 'POST':
 		form = HandleFriendRequestForm(request.POST)

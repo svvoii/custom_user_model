@@ -148,7 +148,7 @@ def profile_view(request, *args, **kwargs):
 		context['request_sent'] = request_sent
 		context['friend_request'] = friend_request
 		# DEBUG #
-		context['debug_context'] = context
+		# context['debug_context'] = context
 
 	return render(request, 'account/profile.html', context)
 
