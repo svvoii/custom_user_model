@@ -77,7 +77,7 @@ def det_redirect_if_exists(request):
 
 
 def profile_view(request, *args, **kwargs):
-	content = {}
+	context = {}
 	user_id = kwargs.get('user_id')
 
 	try:
@@ -86,11 +86,11 @@ def profile_view(request, *args, **kwargs):
 		return HttpResponse("User not found.")
 
 	if account:
-		content['id'] = account.id
-		content['email'] = account.email
-		content['username'] = account.username
-		content['profile_image'] = account.profile_image
-		content['hide_email'] = account.hide_email
+		context['id'] = account.id
+		context['email'] = account.email
+		context['username'] = account.username
+		context['profile_image'] = account.profile_image
+		context['hide_email'] = account.hide_email
 
 		# determine the relationship status between the logged-in user and the user whose profile is being viewed
 		try:
@@ -99,7 +99,7 @@ def profile_view(request, *args, **kwargs):
 			friend_list = FriendList(user=account)
 			friend_list.save()
 		friends = friend_list.friends.all()
-		content['friends'] = friends
+		context['friends'] = friends
 
 		is_self = True
 		is_friend = False
@@ -115,19 +115,18 @@ def profile_view(request, *args, **kwargs):
 			else:
 				is_friend = False
 				# case 1: the user is not a friend and request status = `THEY_SENT_YOU`
-				if get_friend_request_or_false(sender=account, receiver=user) != False:
+				pending_friend_request = get_friend_request_or_false(sender=account, receiver=user) 
+				if pending_friend_request:
 					request_sent = FriendRequestStatus.THEY_SENT_TO_YOU.value
-					# DEBUG #
-					pending_friend_request =  get_friend_request_or_false(sender=account, receiver=user).id
-					print(f'pending_friend_request_id: {pending_friend_request}')
-					pending_friend_request_id = pending_friend_request.id
-					print(f'pending_friend_request_id: {pending_friend_request_id}')
-					content['pending_friend_request_id'] = pending_friend_request_id
-					# # # # #
-					# content['pending_friend_request_id'] = get_friend_request_or_false(sender=account, receiver=user).id
+					context['pending_friend_request_id'] = pending_friend_request.id
+
 				# case 2: the user is not a friend and request status = `YOU_SENT_TO_THEM`	
-				elif get_friend_request_or_false(sender=user, receiver=account) != False:
-					request_sent = FriendRequestStatus.SENT_BY_YOU.value
+				elif get_friend_request_or_false(sender=user, receiver=account) is not False:
+					pending_friend_request = get_friend_request_or_false(sender=user, receiver=account)
+					if pending_friend_request:
+						request_sent = FriendRequestStatus.SENT_BY_YOU.value
+						context['pending_friend_request_id'] = pending_friend_request.id
+
 				# case 3: the user is not a friend and request status = `NO_REQUEST_SENT`
 				else:
 					request_sent = FriendRequestStatus.NO_REQUEST_SENT.value
@@ -143,13 +142,15 @@ def profile_view(request, *args, **kwargs):
 			except:
 				friend_request = None
 
-		content['is_self'] = is_self
-		content['is_friend'] = is_friend
-		content['BASE_URL'] = settings.BASE_URL
-		content['request_sent'] = request_sent
-		content['friend_request'] = friend_request
+		context['is_self'] = is_self
+		context['is_friend'] = is_friend
+		context['BASE_URL'] = settings.BASE_URL
+		context['request_sent'] = request_sent
+		context['friend_request'] = friend_request
+		# DEBUG #
+		context['debug_context'] = context
 
-	return render(request, 'account/profile.html', content)
+	return render(request, 'account/profile.html', context)
 
 
 def account_search_view(request, *args, **kwargs):

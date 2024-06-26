@@ -3,16 +3,20 @@ from django.contrib import messages
 from django.shortcuts import render, redirect
 from friends.forms import SendFriendRequestForm, HandleFriendRequestForm
 from friends.models import FriendRequest
+from account.models import Account
 
 
 def send_friend_request_view(request):
+	# DEBUG #
+	print(request.POST)
+	# # # # #
 	if request.method == 'POST':
 		form = SendFriendRequestForm(request.POST)
 		if form.is_valid():
 			receiver = form.cleaned_data.get('receiver_id')
 			FriendRequest.objects.create(sender=request.user, receiver=receiver)
 			messages.success(request, f'Friend request sent to {receiver.username}')
-			return redirect('account:profile', user_id=request.user.id)
+			return redirect('account:profile', user_id=receiver.id)
 		else:
 			return HttpResponse('Invalid form data')
 	else:
@@ -30,9 +34,9 @@ def cancel_friend_request_view(request):
 			friend_request = form.cleaned_data.get('friend_request_id')
 			friend_request.cancel()
 			messages.success(request, f'Friend request cancelled')
-			return redirect('account:profile', user_id=request.user.id)
+			return redirect('account:profile', user_id=friend_request.receiver.id)
 		else:
-			print(form.errors)
+			# print(form.errors)
 			return HttpResponse('Invalid form data.. cancel_friend_request_view')
 	else:
 		messages.error(request, 'Debug: This is a POST-only endpoint')

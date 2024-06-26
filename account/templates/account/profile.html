@@ -3,6 +3,17 @@
 
 {% block content %}
 
+{% comment %} 
+<div style="border: 1px solid black; padding: 10px; margin-bottom: 20px;">
+	<h4>DEBUG. Context Data:</h4>
+	<ul>
+		{% for key, value in debug_context.items %}
+			<li><strong>{{ key }}</strong>: {{ value }}</li>
+		{% endfor %}
+	</ul>
+</div>
+{% endcomment %}
+
 {% if messages %}
 	{% for message in messages %}
 		<li{% if message.tags %} class="{{ message.tags }}"{% endif %}>
