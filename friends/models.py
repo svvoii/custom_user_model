@@ -30,6 +30,19 @@ class FriendList(models.Model):
 		# Remove the initiator from the to_be_removed user's friend list
 		friend_list = FriendList.objects.get(user=to_be_removed)
 		friend_list.remove_friend(initiator_friends_list.user)	
+
+		# Delete any friend requests from the database
+		FriendRequest.objects.filter(
+			sender=initiator_friends_list.user,
+			receiver=to_be_removed,
+			is_active=True
+		).delete()
+
+		FriendRequest.objects.filter(
+			sender=to_be_removed,
+			receiver=initiator_friends_list.user,
+			is_active=True
+		).delete()
 	
 	def is_mutual_friend(self, friend):
 		if friend in self.friends.all():

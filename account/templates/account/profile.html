@@ -93,18 +93,18 @@
 	
 	<!-- Friend list link --><br>
 	<a href="#">
-		<span> contact_page </span></br>
 		<span> Friends ({{ friends|length }}) </span></br>
 	</a>
+	<br>
 
 	{% if friend_request %}
 	<!-- Friend requests -->
 		<a href="{% url 'friends:friend_requests' user_id=id %}">
-			<span> person_add </span></br>
 			<span> Friend Requests ({{ friend_request|length }}) </span></br>
 		</a>
 	{% endif %}
 
+	<br>
 	{% if is_friend %}
 		<div onclick="createOrReturnPrivateChat('{{ id }}')">
 			<span> message </span></br>

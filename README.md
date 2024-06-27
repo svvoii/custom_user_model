@@ -1730,7 +1730,9 @@ from django.db import models
 from django.conf import settings
 from django.utils import timezone
 
+
 class FriendList(models.Model):
+
 	# This is the account who owns the friend list (one user has one friend list)
 	user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='user')
 
@@ -1756,6 +1758,19 @@ class FriendList(models.Model):
 		# Remove the initiator from the to_be_removed user's friend list
 		friend_list = FriendList.objects.get(user=to_be_removed)
 		friend_list.remove_friend(initiator_friends_list.user)	
+
+		# Delete any friend requests from the database
+		FriendRequest.objects.filter(
+			sender=initiator_friends_list.user,
+			receiver=to_be_removed,
+			is_active=True
+		).delete()
+
+		FriendRequest.objects.filter(
+			sender=to_be_removed,
+			receiver=initiator_friends_list.user,
+			is_active=True
+		).delete()
 	
 	def is_mutual_friend(self, friend):
 		if friend in self.friends.all():
@@ -1784,11 +1799,14 @@ class FriendRequest(models.Model):
 
 	def decline(self):
 		self.is_active = False
-		self.save()
+		# self.save()
+		self.delete()
 
 	def cancel(self):
 		self.is_active = False
-		self.save()
+		# self.save()
+		self.delete()
+
 ```
 
 **NOTE**: *The `FriendList` table shall be created as soon as new user is created. So, we would need to add another function to the `Account` model later.*  
@@ -2147,6 +2165,17 @@ def send_friend_request_view(request):
 
 {% block content %}
 
+{% comment %}
+<div style="border: 1px solid black; padding: 10px; margin-bottom: 20px;">
+	<h4>DEBUG. Context Data:</h4>
+	<ul>
+		{% for key, value in debug_context.items %}
+			<li><strong>{{ key }}</strong>: {{ value }}</li>
+		{% endfor %}
+	</ul>
+</div> 
+{% endcomment %}
+
 {% if messages %}
 	{% for message in messages %}
 		<li{% if message.tags %} class="{{ message.tags }}"{% endif %}>
@@ -2226,18 +2255,18 @@ def send_friend_request_view(request):
 	
 	<!-- Friend list link --><br>
 	<a href="#">
-		<span> contact_page </span></br>
 		<span> Friends ({{ friends|length }}) </span></br>
 	</a>
+	<br>
 
 	{% if friend_request %}
 	<!-- Friend requests -->
-		<a href="#">
-			<span> person_add </span></br>
+		<a href="{% url 'friends:friend_requests' user_id=id %}">
 			<span> Friend Requests ({{ friend_request|length }}) </span></br>
 		</a>
 	{% endif %}
 
+	<br>
 	{% if is_friend %}
 		<div onclick="createOrReturnPrivateChat('{{ id }}')">
 			<span> message </span></br>
@@ -2248,7 +2277,6 @@ def send_friend_request_view(request):
 {% endif %}
 	
 {% endblock content %}
-
 ```
 
 4. Creating the `friends/urls.py` file in the `friends` app directory:
@@ -2511,6 +2539,53 @@ urlpatterns = [
 #### ***DECLINE FRIEND REQUEST***
 
 
+1. Adding the `decline_friend_request_view` function to the `friends/views.py` file:
+
+```python
+...
+def decline_friend_request_view(request):
+	user = request.user
+	if not user.is_authenticated:
+		messages.error(request, 'You must be authenticated to decline a friend request')
+		return redirect('login')
+
+	if request.method == 'POST':
+		form = HandleFriendRequestForm(request.POST)
+		if form.is_valid():
+			friend_request_id = form.cleaned_data.get('friend_request_id')
+			friend_request_id.decline()
+			messages.success(request, f'Friend request declined')
+			# return redirect('account:profile', user_id=friend_request_id.sender.id) # Redirect to the profile of the user who sent the request
+			return redirect('account:profile', user_id=request.user.id) # Redirect to the user's profile
+		else:
+			return HttpResponse('Invalid form data.. decline_friend_request_view')
+	else:
+		messages.error(request, 'Debug: This is a POST-only endpoint')
+		return redirect('account:profile', user_id=request.user.id)
+
+```
+
+2. Adding the respective url to the `friends/urls.py` file:
+
+```python
+...
+urlpatterns = [
+	path('decline-friend-request/', views.decline_friend_request_view, name='decline_friend_request'),
+]
+```
+
+
+*At this point, hopefully, the users can now send friend requests, cancel friend requests, accept friend requests, decline friend requests, and remove friends from the friend list*
+
+
+#### ***ADDING FRIENDS LIST PAGE***
+
+*This will allow the user to view their friends list and remove friends from the list*
+
+1. Adding the `friends_list_view` function to the `friends/views.py` file:
+
+```python
+```
 
 
 
