@@ -11,7 +11,7 @@
 			<li><strong>{{ key }}</strong>: {{ value }}</li>
 		{% endfor %}
 	</ul>
-</div>
+</div> 
 {% endcomment %}
 
 {% if messages %}
@@ -99,7 +99,7 @@
 
 	{% if friend_request %}
 	<!-- Friend requests -->
-		<a href="#">
+		<a href="{% url 'friends:friend_requests' user_id=id %}">
 			<span> person_add </span></br>
 			<span> Friend Requests ({{ friend_request|length }}) </span></br>
 		</a>

@@ -6,6 +6,22 @@ from friends.models import FriendRequest
 from account.models import Account
 
 
+def friend_requests_view(request, *args, **kwargs):
+	context = {}
+	user = request.user
+	if user.is_authenticated:
+		user_id = kwargs.get('user_id')
+		account = Account.objects.get(pk=user_id)
+		if account == user:
+			friend_requests = FriendRequest.objects.filter(receiver=account, is_active=True)
+			context['friend_requests_count'] = friend_requests
+		else:
+			return HttpResponse("You can't view another user's friend requests.")
+	else:
+		redirect('login')		
+	return render(request, 'friends/friend_requests.html', context)
+
+
 def send_friend_request_view(request):
 	# DEBUG #
 	# print(request.POST)

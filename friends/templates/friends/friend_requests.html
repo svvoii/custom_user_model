@@ -1,0 +1,25 @@
+{% extends 'layout.html' %}
+{% load static %}
+
+{% block content %}
+
+{% if friend_requests_count %}
+	{% for request in friend_requests_count %}
+		<a href="{% url 'account:profile' user_id=request.sender.id %}">
+			<img src="{{request.sender.profile_image.url}}" alt="">
+		</a>
+		<a href="{% url 'account:profile' user_id=request.sender.id %}">
+			<h4>{{request.sender.username}}</h4>
+		</a>
+
+		<span id="id_cancel_{{request.sender.id}}">cancel</span>
+		<span id="id_confirm_{{request.sender.id}}">check</span>
+
+	{% endfor %}
+	
+	{% else %} <!-- If no friends -->
+		<p>No results</p>
+{% endif %}
+	
+{% endblock content %}
+

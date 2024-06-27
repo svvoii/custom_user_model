@@ -2320,6 +2320,92 @@ urlpatterns = [
 **NOTE: At this point `send_friend_request_view` and `cancel_friend_request_view` functions have been tested and are working as expected...**
 
 
+#### ***ADDING FRIEND REQUESTS VIEW***
+
+*This will allow the user to view the friend requests that they have received and accept or decline or cancel the friend requests*  
+
+1. Adding the `friend_requests_view` function to the `friends/views.py` file:
+
+```python
+...
+def friend_requests_view(request, *args, **kwargs):
+	context = {}
+	user = request.user
+	if user.is_authenticated:
+		user_id = kwargs.get('user_id')
+		account = Account.objects.get(pk=user_id)
+		if account == user:
+			friend_requests = FriendRequest.objects.filter(receiver=account, is_active=True)
+			context['friend_requests'] = friend_requests
+		else:
+			return HttpResponse("You can't view another user's friend requests.")
+	else:
+		redirect('login')		
+	return render(request, 'friends/friend_requests.html', context)
+...
+```
+
+2. Adding respective url to the `friends/urls.py` file:
+
+```python
+...
+urlpatterns = [
+	...
+	path('friend-requests/<user_id>/', views.friend_requests_view, name='friend_requests'),
+	...
+]
+```
+
+3. Creating the `friend_requests.html` file in the `friends/templates/friends` directory:
+
+```html
+{% extends 'layout.html' %}
+{% load static %}
+
+{% block content %}
+
+{% if friend_requests_count %}
+	{% for request in friend_requests_count %}
+		<a href="{% url 'account:profile' user_id=request.sender.id %}">
+			<img src="{{request.sender.profile_image.url}}" alt="">
+		</a>
+		<a href="{% url 'account:profile' user_id=request.sender.id %}">
+			<h4>{{request.sender.username}}</h4>
+		</a>
+
+		<span id="id_cancel_{{request.sender.id}}">cancel</span>
+		<span id="id_confirm_{{request.sender.id}}">check</span>
+
+	{% endfor %}
+	
+	{% else %} <!-- If no friends -->
+		<p>No results</p>
+{% endif %}
+	
+{% endblock content %}
+
+
+```
+
+4. Adding the link to the friend requests page in the `profile.html` file in the `account/templates/account` directory:
+
+```html
+...
+	{% if friend_request %}
+	<!-- Friend requests -->
+		<a href="{% url 'friends:friend_requests' user_id=id %}">
+			<span> person_add </span></br>
+			<span> Friend Requests ({{ friend_request|length }}) </span></br>
+		</a>
+	{% endif %}
+...
+```
+
+*At this point, we can access the friend requests page at `http://localhost:8000/friends/friend-requests/<user_id>/` and view the friend requests that the user has received*  
+
+
+#### ***ACCEPT / DECLINE / CANCEL FRIEND REQUESTS***
+
 
 
 
