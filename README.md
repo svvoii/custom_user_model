@@ -1837,7 +1837,7 @@ python manage.py migrate
 *Respective `Friend list` and `Friend requests` sections can be seen in the admin pannel*  
 
 
-### ***SENDING FRIEND REQUESTS***
+### ***IMPLEMENTING FRIENDS SYSTEM***
 
 *This will be the logic to view the profile page from the friends perspective:*
 --> `is_self`: 
@@ -1858,7 +1858,7 @@ So, there will be 5 possible states of the profile page:
 5. `is_friend` = `False` = `THEY_SENT_TO_YOU` - *..this user has sent a friend request to you*  
 
 
-#### ***ADDING FRIEND REQUEST FUNCTIONALITY***
+#### ***ADDING PROFILE VIEW FUNCTIONALITY***
 
 1. Creating new file in `friends` app directory named `friend_request_status.py`:
 
@@ -1977,15 +1977,21 @@ def profile_view(request, *args, **kwargs):
 ...
 ```
 
-4. Updating the `profile.html` file in the `account/templates/account` directory:  
-
-*This is how the `profile.html` file can look like at this point:*  
+**NOTE**: *The following `profile.html` file contains the logic to display the friend request button based on the friend request status. I used forms with POST requests for that matter. The file contains functionality which will be implemented in the next steps.*
 
 ```html
 {% extends 'layout.html' %}
 {% load static %}
 
 {% block content %}
+
+{% if messages %}
+	{% for message in messages %}
+		<li{% if message.tags %} class="{{ message.tags }}"{% endif %}>
+			{{ message }}
+		</li>
+	{% endfor %}
+{% endif %}
 
 <img src="{{ request.user.profile_image.url }}" alt="Profile Image" width="64" height="64">
 <p>Email</p>
@@ -2013,8 +2019,16 @@ def profile_view(request, *args, **kwargs):
 	{% if request_sent == 2 %}
 	<div>
 		<span>Accept Friend Request</span>
-		<span id="id_cancel_{{id}}" onclick='triggerDeclineFriendRequest("{{ pending_friend_request_id }}")'>cancel</span>
-		<span id="id_confirm_{{id}}" onclick='triggerAcceptFriendRequest("{{ pending_friend_request_id }}")'>check</span>
+		<form method="POST" action="{% url 'friends:accept_friend_request' %}">
+			{% csrf_token %}
+			<input type="hidden" name="friend_request_id" value="{{ pending_friend_request_id }}">
+			<input type="submit" value="Accept">
+		</form>
+		<form method="POST" action="{% url 'friends:decline_friend_request' %}">
+			{% csrf_token %}
+			<input type="hidden" name="friend_request_id" value="{{ pending_friend_request_id }}">
+			<input type="submit" value="Decline">
+		</form>
 	</div>
 	{% endif %}
 
@@ -2022,17 +2036,30 @@ def profile_view(request, *args, **kwargs):
 	{% if is_friend == False and is_self == False %}
 		<!-- You sent them a request -->
 		{% if request_sent == 1 %}
-			<button> Cancel Friend Request </button></br>
+			<form method="POST" action="{% url 'friends:cancel_friend_request' %}">
+				{% csrf_token %}
+				<input type="hidden" name="friend_request_id" value="{{ pending_friend_request_id }}">
+				<input type="submit" value="Cancel Friend Request">
+			</form>
 		{% endif %}
+
 		<!-- No requests have been sent -->
 		{% if request_sent == 0 %}
-			<button> Send Friend Request </button></br>
+			<form method="POST" action="{% url 'friends:send_friend_request' %}">
+				{% csrf_token %}
+				<input type="hidden" name="receiver_id" value="{{ id }}">
+				<input type="submit" value="Send Friend Request">
+			</form>
 		{% endif %}
 	{% endif %}
 		
 	{% if is_friend %}
 		<button> Friends </button>
-		<a href="#" onclick="removeFriend('{{ id }}', onFriendRemoved)">Unfriend</a>
+		<form method="POST" action="{% url 'friends:remove_friend' %}">
+			{% csrf_token %}
+			<input type="hidden" name="friend_id" value="{{ id }}">
+			<input type="submit" value="Unfriend">
+		</form>
 	{% endif %}
 	
 	<!-- Friend list link --><br>
@@ -2043,7 +2070,7 @@ def profile_view(request, *args, **kwargs):
 
 	{% if friend_request %}
 	<!-- Friend requests -->
-		<a href="#">
+		<a href="{% url 'friends:friend_requests' user_id=id %}">
 			<span> person_add </span></br>
 			<span> Friend Requests ({{ friend_request|length }}) </span></br>
 		</a>
@@ -2067,7 +2094,7 @@ def profile_view(request, *args, **kwargs):
 *Next step would be to add the functionality and logic to send the friend request*  
 
 
-#### ***SENDING FRIEND REQUESTS FUNCTIONALITY***  
+#### ***SENDING FRIEND REQUEST***  
 
 1. Creating the forms which correspond to each of the friend request actions in the `friends/forms.py` file:
 
@@ -2084,10 +2111,6 @@ User = get_user_model()
 class SendFriendRequestForm(forms.Form):
 	receiver = forms.ModelChoiceField(queryset=User.objects.all())
 
-
-class HandleFriendRequestForm(forms.Form):
-	friend_request_id = forms.ModelChoiceField(queryset=FriendRequest.objects.all())
-
 ```
 
 2. Adding respective views to the `friends/views.py` file:
@@ -2096,9 +2119,8 @@ class HandleFriendRequestForm(forms.Form):
 from django.http import HttpResponse
 from django.contrib import messages
 from django.shortcuts import render, redirect
-from friends.forms import SendFriendRequestForm, HandleFriendRequestForm
+from friends.forms import SendFriendRequestForm
 from friends.models import FriendRequest
-from account.models import Account
 
 
 def send_friend_request_view(request):
@@ -2115,67 +2137,7 @@ def send_friend_request_view(request):
 		messages.error(request, 'Debug: This is a POST-only endpoint')
 		return redirect('account:profile', user_id=request.user.id)
 
-
-def cancel_friend_request_view(request):
-	if request.method == 'POST':
-		form = HandleFriendRequestForm(request.POST)
-		if form.is_valid():
-			friend_request = form.cleaned_data.get('friend_request_id')
-			friend_request.cancel()
-			messages.success(request, f'Friend request cancelled')
-			return redirect('account:profile', user_id=friend_request.receiver.id)
-		else:
-			return HttpResponse('Invalid form data.. cancel_friend_request_view')
-	else:
-		messages.error(request, 'Debug: This is a POST-only endpoint')
-		return redirect('account:profile', user_id=request.user.id)
-
-
-def accept_friend_request_view(request):
-	if request.method == 'POST':
-		form = HandleFriendRequestForm(request.POST)
-		if form.is_valid():
-			friend_request = form.cleaned_data.get('friend_request_id')
-			friend_request.accept()
-			messages.success(request, f'You are now friends with {friend_request.sender.username}')
-			return redirect('profile')
-		else:
-			return HttpResponse('Invalid form data')
-	else:
-		messages.error(request, 'Debug: This is a POST-only endpoint')
-		return redirect('profile')
-
-
-def decline_friend_request_view(request):
-	if request.method == 'POST':
-		form = HandleFriendRequestForm(request.POST)
-		if form.is_valid():
-			friend_request = form.cleaned_data.get('friend_request_id')
-			friend_request.decline()
-			messages.success(request, f'Friend request declined')
-			return redirect('profile')
-		else:
-			return HttpResponse('Invalid form data')
-	else:
-		messages.error(request, 'Debug: This is a POST-only endpoint')
-		return redirect('profile')
-
-def remove_friend_view(request):
-	if request.method == 'POST':
-		form = HandleFriendRequestForm(request.POST)
-		if form.is_valid():
-			friend_request = form.cleaned_data.get('friend_request_id')
-			friend_request.cancel()
-			messages.success(request, f'Friend removed')
-			return redirect('profile')
-		else:
-			return HttpResponse('Invalid form data')
-	else:
-		messages.error(request, 'Debug: This is a POST-only endpoint')
-		return redirect('profile')
-
 ```
-**NOTE**: *At this point, only `send_friend_request_view` and `cancel_friend_request_view` functions are being tested..*
 
 3. Including the forms to the `profile.html` file in the `account/templates/account` directory:
 
@@ -2299,10 +2261,6 @@ app_name = 'friends'
 
 urlpatterns = [
 	path('send-friend-request/', views.send_friend_request_view, name='send_friend_request'),
-	path('cancel-friend-request/', views.cancel_friend_request_view, name='cancel_friend_request'),
-	path('accept-friend-request/', views.accept_friend_request_view, name='accept_friend_request'),
-	path('decline-friend-request/', views.decline_friend_request_view, name='decline_friend_request'),
-	path('remove-friend/', views.remove_friend_view, name='remove_friend'),
 ]
 ```
 
@@ -2320,13 +2278,14 @@ urlpatterns = [
 **NOTE: At this point `send_friend_request_view` and `cancel_friend_request_view` functions have been tested and are working as expected...**
 
 
-#### ***ADDING FRIEND REQUESTS VIEW***
+#### ***ADDING FRIEND REQUESTS PAGE***
 
 *This will allow the user to view the friend requests that they have received and accept or decline or cancel the friend requests*  
 
 1. Adding the `friend_requests_view` function to the `friends/views.py` file:
 
 ```python
+from account.models import Account
 ...
 def friend_requests_view(request, *args, **kwargs):
 	context = {}
@@ -2372,10 +2331,6 @@ urlpatterns = [
 		<a href="{% url 'account:profile' user_id=request.sender.id %}">
 			<h4>{{request.sender.username}}</h4>
 		</a>
-
-		<span id="id_cancel_{{request.sender.id}}">cancel</span>
-		<span id="id_confirm_{{request.sender.id}}">check</span>
-
 	{% endfor %}
 	
 	{% else %} <!-- If no friends -->
@@ -2404,7 +2359,157 @@ urlpatterns = [
 *At this point, we can access the friend requests page at `http://localhost:8000/friends/friend-requests/<user_id>/` and view the friend requests that the user has received*  
 
 
-#### ***ACCEPT / DECLINE / CANCEL FRIEND REQUESTS***
+#### ***CANCEL FRIEND REQUEST***
+
+1. Adding the `cancel_friend_request_view` function to the `friends/views.py` file:
+
+```python
+...
+def cancel_friend_request_view(request):
+	# DEBUG #
+	# print(request.POST)
+	# # # # #
+	if request.method == 'POST':
+		form = HandleFriendRequestForm(request.POST)
+		if form.is_valid():
+			friend_request_id = form.cleaned_data.get('friend_request_id')
+			friend_request_id.cancel()
+			messages.success(request, f'Friend request cancelled')
+			return redirect('account:profile', user_id=friend_request_id.receiver.id)
+		else:
+			# print(form.errors)
+			return HttpResponse('Invalid form data.. cancel_friend_request_view')
+	else:
+		messages.error(request, 'Debug: This is a POST-only endpoint')
+		return redirect('account:profile', user_id=request.user.id)
+...
+```
+
+2. Adding the `HandleFriendRequestForm` class to the `friends/forms.py` file:
+
+```python
+...
+class HandleFriendRequestForm(forms.Form):
+	friend_request_id = forms.ModelChoiceField(queryset=FriendRequest.objects.all())
+```
+
+3. Adding the respective url to the `friends/urls.py` file:
+
+```python
+...
+urlpatterns = [
+	...
+	path('cancel-friend-request/', views.cancel_friend_request_view, name='cancel_friend_request'),
+	...
+]
+```
+
+
+#### ***ACCEPT FRIEND REQUEST***
+
+1. Adding the `accept_friend_request_view` function to the `friends/views.py` file:
+
+```python
+def accept_friend_request_view(request):
+	if request.method == 'POST':
+		form = HandleFriendRequestForm(request.POST)
+		if form.is_valid():
+			friend_request_id = form.cleaned_data.get('friend_request_id')
+			friend_request_id.accept()
+			messages.success(request, f'You are now friends with {friend_request_id.sender.username}')
+			return redirect('account:profile', user_id=request.user.id)
+		else:
+			return HttpResponse('Invalid form data.. accept_friend_request_view')
+	else:
+		messages.error(request, 'Debug: This is a POST-only endpoint')
+		return redirect('account:profile', user_id=request.user.id)
+...
+```
+
+2. Adding the respective url to the `friends/urls.py` file:
+
+```python
+...
+urlpatterns = [
+	...
+	path('accept-friend-request/', views.accept_friend_request_view, name='accept_friend_request'),
+	...
+]
+```
+
+#### ***REMOVE FRIEND***
+
+*This will allow the user to remove a friend from their friend list*
+
+1. Adding the `remove_friend_view` function to the `friends/views.py` file:
+
+```python
+...
+from django.http import HttpResponse
+from django.contrib import messages
+from django.core.exceptions import ObjectDoesNotExist
+from django.shortcuts import render, redirect
+from friends.forms import SendFriendRequestForm, HandleFriendRequestForm, RemoveFriendForm
+from friends.models import FriendRequest, FriendList
+from account.models import Account
+
+...
+def remove_friend_view(request):
+	user = request.user
+	# DEBUG #
+	# print(request.POST)
+	# print(f'this user: {user.id}')
+    # # # # #
+	if not user.is_authenticated:
+		messages.error(request, 'You must be authenticated to remove a friend')
+		return redirect('login')
+
+	if request.method == 'POST':
+		form = RemoveFriendForm(request.POST)
+		if form.is_valid():
+			to_be_removed_user = form.cleaned_data.get('friend_id')
+			try:
+				friend_list = FriendList.objects.get(user=user)
+			except ObjectDoesNotExist:
+				messages.error(request, 'Invalid user id or FriendList not found')
+				return redirect('account:profile', user_id=user.id)
+
+			friend_list.unfriend(to_be_removed_user)
+			messages.success(request, f'Friend removed')
+			return redirect('account:profile', user_id=to_be_removed_user.id)
+		else:
+			# DEBUG #
+			print(form.errors)
+			return HttpResponse('Invalid form data.. remove_friend_view')
+	
+	else: # Never happens..
+		messages.error(request, 'Debug: This is a POST-only endpoint')
+		return redirect('account:profile', user_id=user.id)
+...
+```
+
+2. Adding the `RemoveFriendForm` class to the `friends/forms.py` file:
+
+```python
+...
+class RemoveFriendForm(forms.Form):
+	friend_id = forms.ModelChoiceField(queryset=User.objects.all())
+```
+
+3. Adding the respective url to the `friends/urls.py` file:
+
+```python
+...
+urlpatterns = [
+	...
+	path('remove-friend/', views.remove_friend_view, name='remove_friend'),
+	...
+]
+```
+
+
+#### ***DECLINE FRIEND REQUEST***
+
 
 
 
