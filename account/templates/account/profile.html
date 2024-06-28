@@ -39,6 +39,7 @@
 <!-- If Auth user is viewing their own profile -->
 {% if is_self %}
 	<a href="{% url 'account:edit' user_id=id %}">Update</a></br>
+	</br>
 	<a href="{% url 'password_change' %}">Change password</a></br>
 {% endif %}
 
@@ -93,7 +94,6 @@
 	
 	<!-- Friend list link --><br>
 	<a href="{% url 'friends:friend_list' user_id=id %}">
-		<span> contact_page </span><br>
 		<span> Friends ({{ friends|length }}) </span></br>
 	</a>
 	<br>
@@ -107,10 +107,7 @@
 
 	<br>
 	{% if is_friend %}
-		<div onclick="createOrReturnPrivateChat('{{ id }}')">
-			<span> message </span></br>
-			<span> Message </span></br>
-		</div>
+		<span> Message </span></br>
 	{% endif %}
 
 {% endif %}

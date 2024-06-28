@@ -19,17 +19,14 @@
 			
 		{% if friend.1 %}
 			<p> FRIENDS </p>
-			<span> check_circle_outline </span>
 		{% else %}
 			{% if friend.0 !=  request.user %}
 				<p> Not Friends </p>
-				<span>cancel</span>
 			{% endif %}
 		{% endif %}
 
 		{% if friend.0 == request.user %}
 				<p> This is you </p>
-				<span> person_pin </span>
 		{% endif %}
 
 	{% endfor %}

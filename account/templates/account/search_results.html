@@ -13,23 +13,20 @@
 		<a href="{% url 'account:profile' user_id=account.0.id %}">
 			<h4>{{ account.0.username }}</h4>
 			{% if account.1 %}
-				<p><a href="#" onclick="createOrReturnPrivateChat('{{ account.0.id }}')">Send a Message</a></p>
+				<a href="#">Send a Message</a>
 			{% endif %}
 		</a>
 
 		{% if account.1 %} <!-- If friends -->
 			<p> Friends </p>
-			<span> check_circle_outline </span>
 		{% else %}
 			{% if account.0 !=  request.user %} <!-- If not friends -->
 				<p> Not Friends </p>
-				<span> cancel </span>
 			{% endif %}
 		{% endif %}
 
 		{% if account.0 == request.user %} <!-- If you -->
 			<p> This is you </p>
-			<span> person_pin </span>
 		{% endif %}
 
 	{% if forloop.counter|divisibleby:2 %} <!-- If even.. `forloop.counter` is to access the index -->
@@ -41,7 +38,5 @@
 	{% else %} <!-- If no friends -->
 		<p> No results </p>
 {% endif %}
-
-{#%  include 'chat/create_or_return_private_chat.html' %#}
 
 {% endblock content %}

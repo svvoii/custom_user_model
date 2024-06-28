@@ -31,19 +31,6 @@ class FriendList(models.Model):
 		friend_list = FriendList.objects.get(user=to_be_removed)
 		friend_list.remove_friend(initiator_friends_list.user)	
 
-		# Delete any friend requests from the database
-		FriendRequest.objects.filter(
-			sender=initiator_friends_list.user,
-			receiver=to_be_removed,
-			is_active=True
-		).delete()
-
-		FriendRequest.objects.filter(
-			sender=to_be_removed,
-			receiver=initiator_friends_list.user,
-			is_active=True
-		).delete()
-	
 	def is_mutual_friend(self, friend):
 		if friend in self.friends.all():
 			return True
@@ -68,14 +55,15 @@ class FriendRequest(models.Model):
 				sender_friend_list.add_friend(self.receiver)
 				self.is_active = False
 				self.save()
+				# self.delete()
 
 	def decline(self):
 		self.is_active = False
-		# self.save()
-		self.delete()
+		self.save()
+		# self.delete()
 
 	def cancel(self):
 		self.is_active = False
-		# self.save()
-		self.delete()
+		self.save()
+		# self.delete()
 

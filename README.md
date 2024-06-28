@@ -1149,8 +1149,8 @@ Also profile page can have several states and functionalities :
 	{% if request_sent == 0 %}
 	<div>
 		<span>Accept Friend Request</span>
-		<span id="id_cancel_{{id}}" onclick='triggerDeclineFriendRequest("{{ pending_friend_request_id }}")'>cancel</span>
-		<span id="id_confirm_{{id}}" onclick='triggerAcceptFriendRequest("{{ pending_friend_request_id }}")'>check</span>
+		<span>cancel</span>
+		<span>check</span>
 	</div>
 	{% endif %}
 
@@ -1168,13 +1168,12 @@ Also profile page can have several states and functionalities :
 		
 	{% if is_friend %}
 		<button> Friends </button>
-		<a href="#" onclick="removeFriend('{{ id }}', onFriendRemoved)">Unfriend</a>
+		<a href="#">Unfriend</a>
 	{% endif %}
 	
 	<!-- TODO -->
 	<!-- Friend list link -->
 	<a href="#">
-		<span> contact_page </span></br>
 		<span> Friends (0) </span></br>
 	</a>
 
@@ -1188,10 +1187,7 @@ Also profile page can have several states and functionalities :
 	{#% endif %#}
 
 	{% if is_friend %}
-		<div onclick="createOrReturnPrivateChat('{{ id }}')">
-			<span> message </span></br>
-			<span> Message </span></br>
-		</div>
+		<span> Message </span></br>
 	{% endif %}
 
 {% endif %}
@@ -1318,23 +1314,20 @@ urlpatterns = [
 		<a href="{% url 'account:profile' user_id=account.0.id %}">
 			<h4>{{ account.0.username }}</h4>
 			{% if account.1 %}
-				<p><a href="#" onclick="createOrReturnPrivateChat('{{ account.0.id }}')">Send a Message</a></p>
+				<a href="#">Send a Message</a>
 			{% endif %}
 		</a>
 
 		{% if account.1 %} <!-- If friends -->
 			<p> Friends </p>
-			<span> check_circle_outline </span>
 		{% else %}
 			{% if account.0 !=  request.user %} <!-- If not friends -->
 				<p> Not Friends </p>
-				<span> cancel </span>
 			{% endif %}
 		{% endif %}
 
 		{% if account.0 == request.user %} <!-- If you -->
 			<p> This is you </p>
-			<span> person_pin </span>
 		{% endif %}
 
 	{% if forloop.counter|divisibleby:2 %} <!-- If even.. `forloop.counter` is to access the index -->
@@ -1346,8 +1339,6 @@ urlpatterns = [
 	{% else %} <!-- If no friends -->
 		<p> No results </p>
 {% endif %}
-
-{#%  include 'chat/create_or_return_private_chat.html' %#}
 
 {% endblock content %}
 ```
@@ -1759,19 +1750,6 @@ class FriendList(models.Model):
 		friend_list = FriendList.objects.get(user=to_be_removed)
 		friend_list.remove_friend(initiator_friends_list.user)	
 
-		# Delete any friend requests from the database
-		FriendRequest.objects.filter(
-			sender=initiator_friends_list.user,
-			receiver=to_be_removed,
-			is_active=True
-		).delete()
-
-		FriendRequest.objects.filter(
-			sender=to_be_removed,
-			receiver=initiator_friends_list.user,
-			is_active=True
-		).delete()
-	
 	def is_mutual_friend(self, friend):
 		if friend in self.friends.all():
 			return True
@@ -1799,17 +1777,16 @@ class FriendRequest(models.Model):
 
 	def decline(self):
 		self.is_active = False
-		# self.save()
-		self.delete()
+		self.save()
 
 	def cancel(self):
 		self.is_active = False
-		# self.save()
-		self.delete()
-
+		self.save()
 ```
 
 **NOTE**: *The `FriendList` table shall be created as soon as new user is created. So, we would need to add another function to the `Account` model later.*  
+
+*Each friend request will be saved in the `FriendRequest` table. The `is_active` field will be used to determine if the friend request is active or not. If the friend request is active, it means that the request has not been accepted or declined yet. All requests will be available in the `FriendRequest` table, in database, even if they are declined or canceled.*  
 
 
 4. Adding a class `FriendListAdmin` to the `friends/admin.py` file:
@@ -1988,8 +1965,6 @@ def profile_view(request, *args, **kwargs):
 		context['BASE_URL'] = settings.BASE_URL
 		context['request_sent'] = request_sent
 		context['friend_request'] = friend_request
-		# DEBUG #
-		# context['debug_context'] = context
 
 	return render(request, 'account/profile.html', context)
 ...
@@ -2165,17 +2140,6 @@ def send_friend_request_view(request):
 
 {% block content %}
 
-{% comment %}
-<div style="border: 1px solid black; padding: 10px; margin-bottom: 20px;">
-	<h4>DEBUG. Context Data:</h4>
-	<ul>
-		{% for key, value in debug_context.items %}
-			<li><strong>{{ key }}</strong>: {{ value }}</li>
-		{% endfor %}
-	</ul>
-</div> 
-{% endcomment %}
-
 {% if messages %}
 	{% for message in messages %}
 		<li{% if message.tags %} class="{{ message.tags }}"{% endif %}>
@@ -2201,6 +2165,7 @@ def send_friend_request_view(request):
 <!-- If Auth user is viewing their own profile -->
 {% if is_self %}
 	<a href="{% url 'account:edit' user_id=id %}">Update</a></br>
+	</br>
 	<a href="{% url 'password_change' %}">Change password</a></br>
 {% endif %}
 
@@ -2254,7 +2219,7 @@ def send_friend_request_view(request):
 	{% endif %}
 	
 	<!-- Friend list link --><br>
-	<a href="#">
+	<a href="{% url 'friends:friend_list' user_id=id %}">
 		<span> Friends ({{ friends|length }}) </span></br>
 	</a>
 	<br>
@@ -2268,10 +2233,7 @@ def send_friend_request_view(request):
 
 	<br>
 	{% if is_friend %}
-		<div onclick="createOrReturnPrivateChat('{{ id }}')">
-			<span> message </span></br>
-			<span> Message </span></br>
-		</div>
+		<span> Message </span></br>
 	{% endif %}
 
 {% endif %}
@@ -2627,6 +2589,7 @@ urlpatterns = [
 	
 {% endblock content %}
 ```
+
 2. Adding the `friends_list_view` function to the `friends/views.py` file:
 
 ```python
@@ -2683,9 +2646,8 @@ urlpatterns = [
 
 ```html
 ...
-	<!-- Friend list link --><br>
+	<!-- Friend list link -->
 	<a href="{% url 'friends:friend_list' user_id=id %}">
-		<span> contact_page </span></br>
 		<span> Friends ({{ friends|length }}) </span></br>
 	</a>
 ...
@@ -2724,6 +2686,6 @@ def account_search_view(request, *args, **kwargs):
 ...
 ```
 
-
+**This shall conclude the friends system. The user can now send friend requests, cancel friend requests, accept friend requests, decline friend requests, remove friends from the friend list, and view their friends list**  
 
 
