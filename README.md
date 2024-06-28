@@ -2582,10 +2582,148 @@ urlpatterns = [
 
 *This will allow the user to view their friends list and remove friends from the list*
 
-1. Adding the `friends_list_view` function to the `friends/views.py` file:
+1. Adding the `friend_list.html` file to the `friends/templates/friends` directory:
+
+```html
+{% extends 'layout.html' %}
+{% load static %}
+
+{% block content %}
+
+{% if friends %}
+	{% for friend in friends %}
+		<a href="{% url 'account:profile' user_id=friend.0.pk %}">
+			<img src="{{ friend.0.profile_image.url }}" alt="profile_image">
+		</a>
+		
+		<a href="{% url 'account:profile' user_id=friend.0.pk %}">
+			<h4>{{ friend.0.username|truncatechars:50 }}</h4>
+		</a>
+
+		{% if friend.1 %}
+			<a href="#">Send a Message</a>
+		{% endif %}
+			
+		{% if friend.1 %}
+			<p> FRIENDS </p>
+			<span> check_circle_outline </span>
+		{% else %}
+			{% if friend.0 !=  request.user %}
+				<p> Not Friends </p>
+				<span>cancel</span>
+			{% endif %}
+		{% endif %}
+
+		{% if friend.0 == request.user %}
+				<p> This is you </p>
+				<span> person_pin </span>
+		{% endif %}
+
+	{% endfor %}
+	
+{% else %} <!-- If no friends -->
+	<p>No friends.</p>
+{% endif %}
+	
+{% endblock content %}
+```
+2. Adding the `friends_list_view` function to the `friends/views.py` file:
 
 ```python
+...
+def friend_list_view(request, *args, **kwargs):
+	context = {}
+	user = request.user
+	if not user.is_authenticated:
+		messages.error(request, 'You must be authenticated to view your friend list')
+		return redirect('login')
+
+	user_id = kwargs.get('user_id')
+	if user_id:
+		try:
+			this_user = Account.objects.get(pk=user_id)
+			context['this_user'] = this_user
+		except Account.DoesNotExist:
+			messages.error(request, 'User not found')
+			return redirect('home')
+		try:
+			friend_list = FriendList.objects.get(user=this_user)
+		except FriendList.DoesNotExist:
+			messages.error(request, 'Friend list not found')
+			return redirect('home')
+
+		# Must be friend to view friend list
+		if user != this_user:
+			if not user in friend_list.friends.all():
+				messages.error(request, 'You must be friends to view their friend list')
+				return redirect('home')
+
+		# Get the friend list
+		friends = [] # List of friends [(account1, True), (account2, False), ...]
+		user_friend_list = FriendList.objects.get(user=user)
+		for friend in friend_list.friends.all():
+			friends.append((friend, user_friend_list.is_mutual_friend(friend)))
+		context['friends'] = friends
+
+	return render(request, 'friends/friend_list.html', context)
 ```
+
+3. Adding the respective url to the `friends/urls.py` file:
+
+```python
+...
+urlpatterns = [
+	...
+	path('friend-list/<user_id>/', views.friend_list_view, name='friend_list'),
+	...
+]
+```
+
+4. Adding the link to the friend list page in the `profile.html` file in the `account/templates/account` directory:
+
+```html
+...
+	<!-- Friend list link --><br>
+	<a href="{% url 'friends:friend_list' user_id=id %}">
+		<span> contact_page </span></br>
+		<span> Friends ({{ friends|length }}) </span></br>
+	</a>
+...
+```
+
+*At this point, the user can view their friends list at `http://localhost:8000/friends/friend-list/<user_id>/` and remove friends from the list*
+
+5. Modifying the `account/account_search_view` function in the `account/views.py` file:
+
+*This will allow the user to see the friend status of the search results in the search results page*  
+
+```python
+...
+def account_search_view(request, *args, **kwargs):
+	context = {}
+
+	if request.method == 'GET':
+		search_query = request.GET.get('q')
+		if len(search_query) > 0:
+			# the following query will return all the accounts whose email or username contains the search query
+			search_results = Account.objects.filter(email__icontains=search_query).filter(username__icontains=search_query).distinct()
+			user = request.user
+			accounts = [] # ..list structure: `[(account1, True), (account2, False), ...]` true/False is for friend status
+
+			if user.is_authenticated:
+				user_friend_list = FriendList.objects.get(user=user)
+				for account in search_results:
+					accounts.append((account, user_friend_list.is_mutual_friend(account)))
+				context['accounts'] = accounts
+			else:
+				for account in search_results:
+					accounts.append((account, False)) # False for indicating that the user is not a friend
+				context['accounts'] = accounts
+
+	return render(request, 'account/search_results.html', context)
+...
+```
+
 
 
 

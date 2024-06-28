@@ -92,7 +92,8 @@
 	{% endif %}
 	
 	<!-- Friend list link --><br>
-	<a href="#">
+	<a href="{% url 'friends:friend_list' user_id=id %}">
+		<span> contact_page </span><br>
 		<span> Friends ({{ friends|length }}) </span></br>
 	</a>
 	<br>

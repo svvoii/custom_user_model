@@ -163,9 +163,16 @@ def account_search_view(request, *args, **kwargs):
 			search_results = Account.objects.filter(email__icontains=search_query).filter(username__icontains=search_query).distinct()
 			user = request.user
 			accounts = [] # ..list structure: `[(account1, True), (account2, False), ...]` true/False is for friend status
-			for account in search_results:
-				accounts.append((account, False)) # False for indicating that the user is not a friend
-			context['accounts'] = accounts
+
+			if user.is_authenticated:
+				user_friend_list = FriendList.objects.get(user=user)
+				for account in search_results:
+					accounts.append((account, user_friend_list.is_mutual_friend(account)))
+				context['accounts'] = accounts
+			else:
+				for account in search_results:
+					accounts.append((account, False)) # False for indicating that the user is not a friend
+				context['accounts'] = accounts
 
 	return render(request, 'account/search_results.html', context)
 

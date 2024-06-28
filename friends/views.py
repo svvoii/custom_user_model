@@ -133,3 +133,40 @@ def decline_friend_request_view(request):
 	else:
 		messages.error(request, 'Debug: This is a POST-only endpoint')
 		return redirect('account:profile', user_id=request.user.id)
+
+
+def friend_list_view(request, *args, **kwargs):
+	context = {}
+	user = request.user
+	if not user.is_authenticated:
+		messages.error(request, 'You must be authenticated to view your friend list')
+		return redirect('login')
+
+	user_id = kwargs.get('user_id')
+	if user_id:
+		try:
+			this_user = Account.objects.get(pk=user_id)
+			context['this_user'] = this_user
+		except Account.DoesNotExist:
+			messages.error(request, 'User not found')
+			return redirect('home')
+		try:
+			friend_list = FriendList.objects.get(user=this_user)
+		except FriendList.DoesNotExist:
+			messages.error(request, 'Friend list not found')
+			return redirect('home')
+
+		# Must be friend to view friend list
+		if user != this_user:
+			if not user in friend_list.friends.all():
+				messages.error(request, 'You must be friends to view their friend list')
+				return redirect('home')
+
+		# Get the friend list
+		friends = [] # List of friends [(account1, True), (account2, False), ...]
+		user_friend_list = FriendList.objects.get(user=user)
+		for friend in friend_list.friends.all():
+			friends.append((friend, user_friend_list.is_mutual_friend(friend)))
+		context['friends'] = friends
+
+	return render(request, 'friends/friend_list.html', context)
