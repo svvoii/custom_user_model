@@ -483,7 +483,7 @@ class Account(AbstractBaseUser):
 pipenv install Pillow
 ```
 
-4. Add the custom user model to the `main/admin.py` file
+4. Add the custom user model to the `account/admin.py` file
 
 *This will allow us to see the custom user model in the admin page and all the fields we specified*  
 
