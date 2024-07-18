@@ -291,7 +291,9 @@ For example adding the image to the `layout.html` file as a link to the profile 
 
 **NOTE**: **`{% load static %}` must be added to the top of the html file to use the static files in the project.**
 
-4. Using `collectstatic` command to collect all the static files in the project to the `static_cdn` directory:
+*The image will now be displayed on the navigation bar and will redirect to the profile page (which doesnt exist yet)*  
+
+**`collectstatic` command shall be used in the production environment to collect all the static files in the project to the `static_cdn` directory:**  
 
 ```bash
 python manage.py collectstatic
@@ -299,7 +301,7 @@ python manage.py collectstatic
 
 *This will collect all the static files in the project to the `static_cdn` directory*  
 
-*The image will now be displayed on the navigation bar and will redirect to the profile page (which doesnt exist yet)*
+*No need to use the command in development mode.*  
 
 
 ### Adding Default Profile Image
