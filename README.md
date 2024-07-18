@@ -1113,7 +1113,7 @@ Also profile page can have several states and functionalities :
 - **is_user**: *This is where the user is viewing the profile page of another user and can send friend request..*  
 - **is_friend**: *This is where the user is viewing the profile page of a friend and can send messages, remove friend..*
 
-**NOTE**: *The end logic of how to represent a profile page can be quite complex and can be implemented in many ways. For now, we will implement the basic functionality of the profile page. For now we will treat the profile page based on two events*:  
+**NOTE**: *The end logic of how to represent a profile page can be quite complex and can be implemented in many ways. For now, we will implement the simple functionality of the profile page based on two events*:  
 - *The user is viewing their own profile page*
 - *The user is viewing the profile page of another user*
 
