@@ -178,7 +178,7 @@ from homepage.views import home_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-	path('', home_view, name='home') # Adding the home_view function to the root URL
+    path('', home_view, name='home') # Adding the home_view function to the root URL
 ]
 ```
 
