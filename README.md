@@ -642,7 +642,7 @@ AUTHENTICATION_BACKENDS = [
 
 		<input type="email" name="email" placeholder="Email address" required autofocus></br>
 		<input type="text" name="username" placeholder="Username" required></br>
-		<in		<input type="text" name="username" placeholder="Username" required></br>
+		<input type="text" name="username" placeholder="Username" required></br>
 		<input type="password" name="password2" placeholder="Confirm password" required></br>
 
 		{% for field in registration_form %}
