@@ -707,7 +707,7 @@ class RegistrationForm(UserCreationForm):
 
 3. Adding the `register_view` function to the `account/views.py` file:
 
-*This function will handle the registration process and render the `registration.html` template*
+*This function will handle the registration process and render the `register.html` template*
 
 ```python
 from django.shortcuts import render, redirect
