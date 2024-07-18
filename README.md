@@ -624,7 +624,7 @@ AUTHENTICATION_BACKENDS = [
 
 ### Registration Page
 
-1. Creating the followign new directory: `account/templates/account` and adding the `registration.html` in there:
+1. Creating the followign new directory: `account/templates/account` and adding the `register.html` in there:
 
 ```html
 {% extends 'layout.html' %}
