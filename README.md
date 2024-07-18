@@ -91,7 +91,7 @@ INSTALLED_APPS = [
 ]
 ```
 
-3. Create a new directory named `templates` at the same level as `account` app directory  
+3. Create a new directory named `templates` at the same level with `manage.py` file  
 
 ```bash
 mkdir templates
