@@ -250,7 +250,7 @@ python manage.py collectstatic
 
 *This will collect all the static files in the project to the `static_cdn` directory*  
 
-**NOTE**: *The `collectstatic` command will create a new directory named `static_cdn` in the project directory and copy all the static files in the project to this directory. I was not using `collectstatic` command in order to avoid bunch of copied in this repository*   
+**NOTE**: *The `collectstatic` command will create a new directory named `static_cdn` in the project directory and copy all the static files in the project to this directory.     
 
 
 5. Adding `load static` to the top of the `layout.html` file in the `templates` directory:
