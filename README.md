@@ -935,20 +935,20 @@ urlpatterns = [
 
 The following steps will be done in the development environment:  
 
-1. Adding the `pasword_reset` directory in the `templates` which is at the same level as the `account` app directory:
+1. Adding the `password_reset` directory in the `templates` which is at the same level as the `account` app directory:
 
 ```bash
 mkdir templates/password_reset
 ```
 
 2. Addting several files in the `password_reset` directory:
-`password_change.html`
-`password_change_done.html`
-`password_reset_complete.html`
-`password_reset_done.html`
-`password_reset_email.html`
-`password_reset_form.html`
-`password_reset_subject.txt`
+`password_change.html`  
+`password_change_done.html`  
+`password_reset_complete.html`  
+`password_reset_done.html`  
+`password_reset_email.html`  
+`password_reset_form.html`  
+`password_reset_subject.txt`   
 
 - Adding the `password_change.html` :
 
