@@ -941,7 +941,7 @@ The following steps will be done in the development environment:
 mkdir templates/password_reset
 ```
 
-2. Addting several files in the `password_reset` directory:
+2. Addting several files in the `password_reset` directory:  
 `password_change.html`  
 `password_change_done.html`  
 `password_reset_complete.html`  
