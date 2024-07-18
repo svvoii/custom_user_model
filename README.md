@@ -250,7 +250,7 @@ python manage.py collectstatic
 
 *This will collect all the static files in the project to the `static_cdn` directory*  
 
-**NOTE**: *The `collectstatic` command will create a new directory named `static_cdn` in the project directory and copy all the static files in the project to this directory.     
+**NOTE**: *The `collectstatic` command will create a new directory named `static_cdn` in the project directory and copy all the static files in the project to this directory.*     
 
 
 5. Adding `load static` to the top of the `layout.html` file in the `templates` directory:
@@ -289,7 +289,7 @@ For example adding the image to the `layout.html` file as a link to the profile 
 ...
 ```
 
-**NOTE**: **`{% load static %} must be added to the top of the html file to use the static files in the project`**
+**NOTE**: **`{% load static %}` must be added to the top of the html file to use the static files in the project.**
 
 4. Using `collectstatic` command to collect all the static files in the project to the `static_cdn` directory:
 
