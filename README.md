@@ -1,4 +1,4 @@
-# Custom User Model
+# USER MANAGEMENT SYSTEM
 
 This repository contains the code for the tutorial on how to create a custom user model in Django. The tutorial covers the following topics:
 
@@ -9,57 +9,52 @@ This repository contains the code for the tutorial on how to create a custom use
 - Adding default profile image
 - Building a custom user model
 - Handling case-insensitive input with backends model
-- Custom forms for registration and login
+- Custom forms for registration and login pages
 - Password reset functionality
-- Profile page with update functionality
+- Profile page with personal info update functionality
 
-You can follow along the tutorial to create the project from scratch or run the project from this repository. The project is built using Django 3.2.7 and Python 3.9.6.  
 
-## Creating New Django Project
+
+# CREATING NEW DJANGO PROJECT
 
 *Assuming `python` and `pipenv` are installed.*
 
-### To run the project from this repository:
+## To run the project from this repository:
 
 *If you want to run the project from this repository, follow the steps below to set up the environment and run the server*  
 
-1. Clone the repository
-
-```bash
-git clone https://github.com/svvoii/custom_user_model.git
-
-cd custom_user_model
-```
-
-2. Install the dependencies
+*1. Clone the repo and install the dependencies.*
 
 ```bash
 pipenv install requirements.txt
 ```
 
-3. Run the server
+*2. Run the server*
 
 ```bash
 python manage.py runserver
 ```
 
-*This shall be it for the project setup*
 
+## To follow along this tutorial:
 
-### To follow along this tutorial:
-
-*If you want to follow along this tutorial and create the project from scratch, follow the steps below to set up the environment*
-
-1. Creating new directory for the project and install Django with pipenv
+*1. **Creating new directory for the project and install Django with pipenv***
 
 ```bash
 mkdir custom_user_model
 cd custom_user_model
 
+pipenv shell
 pipenv install django
 ```
 
-2. Create a new Django project
+*The following package is for the `ImageField` in the Custom User Model section:*  
+
+```bash
+pipenv install Pillow
+```
+
+*2. **Create a new Django project***
 
 ```bash
 django-admin startproject main .
@@ -76,43 +71,42 @@ pip freeze > requirements.txt
 
 ## Creating Homepage App and Templates
 
-1. Creating new app to handle the homepage
+*1. **Creating new app to handle the homepage***
 
 ```bash
 python manage.py startapp homepage
 ```
 
-2. Adding the `homepage` app to the `INSTALLED_APPS` list in the `main/settings.py` file:
+*2. **Adding the `homepage` app to the `INSTALLED_APPS` list in the `main/settings.py` file:***
 
 ```python
 INSTALLED_APPS = [
-	'homepage',
 	...
+	'homepage',
 ]
 ```
 
-3. Create a new directory named `templates` at the same level with `manage.py` file  
+*3. **Create a new directory named `templates` at the same level with `manage.py` file***
 
 ```bash
 mkdir templates
 ```
 
-4. Create new directories named `homepage/templates` and `homepage/templates/homepage`: 
+*4. **Create new directories named `homepage/templates` and `homepage/templates/homepage`:***
 
 ```bash
 mkdir homepage/templates
 mkdir homepage/templates/homepage
 ``` 
 
-*This will contain the templates for the homepage app*
+*5. **Add the `templates` directory to the `DIRS` list***
 
-5. Add the `templates` directory to the `DIRS` list in the `main/settings.py` file  
+*In the `main/settings.py` file:*
 
 ```python
 # Adding the following include to use `os` module.
 import os
 ...
-
 TEMPLATES = [
 	{
 		...
@@ -123,9 +117,11 @@ TEMPLATES = [
 ...
 ```
 
-*This will allow Django to look for templates in the main `templates` directory as well as `templates` in the app directories*  
+**NOTE:** *This will allow Django to look for templates in the main `templates` directory as well as `templates` in the app directories*  
 
-6. Create a `layout.html` file in the main `templates` directory:
+*6. **Create a `layout.html` file in the main `templates` directory:***
+
+*In `templates/layout.html` file:*
 
 ```html
 <!DOCTYPE html>
@@ -147,7 +143,9 @@ TEMPLATES = [
 
 ```
 
-7. Create a `home.html` file in the `homepage/templates/homepage` directory:
+*7. **Create a `home.html` file in the `homepage/templates/homepage` directory:***
+
+*In `homepage/templates/homepage/home.html` file:*
 
 ```html
 {% extends 'layout.html' %}
@@ -157,7 +155,9 @@ TEMPLATES = [
 {% endblock content %}
 ```
 
-8. Adding `home_view` function to the `homepage/views.py` file:
+*8. **Adding `home_view` function***
+
+*In the `homepage/views.py` file:*
 
 ```python
 from django.shortcuts import render
@@ -167,7 +167,9 @@ def home_view(request, *args, **kwargs):
 	return render(request, "home.html", context)
 ```
 
-9. Adding reference to the `home_view` function in the `main/urls.py` file:
+*9. **Adding reference to the `home_view` function in the `main/urls.py` file:***
+
+*In the `main/urls.py` file:*  
 
 ```python
 from django.contrib import admin
@@ -185,14 +187,14 @@ urlpatterns = [
 *At this point, we can now run the server and see the homepage template we created at `http://localhost:8000`*  
 
 
-## Adding and Referencing Static Files
+# REFERENCING STATIC FILES
 
-### Setting Up Static Files Directory
+## Setting Up Static Files Directory
 
-**NOTE**: *Take a look on the official Django docs for [static files](https://docs.djangoproject.com/en/5.0/howto/static-files/)*
+**NOTE**: *Here are the official Django docs for [static files](https://docs.djangoproject.com/en/5.0/howto/static-files/)*
 
 
-1. Adding the following to the bottom of the `main/settings.py` file:
+*1. **Adding the following to the bottom of the `main/settings.py` file:***
 
 ```python
 ...
@@ -214,7 +216,7 @@ TEMP = os.path.join(BASE_DIR, 'media_cdn/temp') # ..for temporary files used in 
 BASE_URL = "http://127.0.0.1:8000" # ..for the base URL of the project. Will be easier to access the project URL in the future (This shall be changed to the actual URL of the project when deployed)
 ```
 
-2. Adding the following to the `main/urls.py` file:
+*2. **Adding the following to the `main/urls.py` file:***
 
 ```python
 ...
@@ -228,10 +230,10 @@ if settings.DEBUG:
 	urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 ```
 
-*This is to tell Django to serve the static files in the `static` directory*  
+**NOTE:** *This is to tell Django to serve the static files in the `static` directory*  
 
 
-3. Create a new directory named `static` at the same level as the `templates` directory and other apps directories:  
+*3. **Create directories to serve static and media files:***
 
 ```bash
 mkdir static
@@ -240,20 +242,16 @@ mkdir media
 mkdir media_cdn
 ```
 
-**NOTE** *`static_cdn` and `media_cdn` directories are an example of the directories where the static and media files will be stored when the project is deployed*  
-
-4. Using `collectstatic` command to collect all the static files in the project to the `static_cdn` directory:
+**NOTE** *`static_cdn` and `media_cdn` directories are an example of the directories where the static and media files will be stored when the project is deployed. `_cdn` directories are created once the following command is run in the production environment:*  
 
 ```bash
 python manage.py collectstatic
 ```
 
-*This will collect all the static files in the project to the `static_cdn` directory*  
-
-**NOTE**: *The `collectstatic` command will create a new directory named `static_cdn` in the project directory and copy all the static files in the project to this directory.*     
+*By creating `static_cdn` and `media_cdn` directories, we can test the availability of the static files in the project in the development environment. (No need to run the `collectstatic` for now).*
 
 
-5. Adding `load static` to the top of the `layout.html` file in the `templates` directory:
+*4. **Adding `load static` to the top of the `layout.html` file in the `templates` directory:***
 
 ```html
 {% load static %}
@@ -263,50 +261,46 @@ python manage.py collectstatic
 *This will allow us to use the static files (img, css, js etc) in the project*  
 
 
-### Adding & Using Stsatic Images
+# USING STATIC IMAGES
 
-1. Create a new directory named `images` in the `static` directory:
+*1. **Create a new directory named `images` in the `static` directory:***
 
 ```bash
 mkdir static/images
 ```
 
-2. Add the images of choice to the `static/images` directory:
+*2. **Add the images of choice to the `static/images` directory:***
 
 *For example, [emoticon smile icon](https://www.iconexperience.com/o_collection/icons/?icon=emoticon_smile)*  
 
-3. Adding the image to the html file of choice:
 
-For example adding the image to the `layout.html` file as a link to the profile page :
+*3. **Adding the image to the html file of choice:***
+
+*For example adding the image to the `layout.html` file as a link to the profile page :*
 
 ```html
 {% load static %}
+...
+<body>
 ...
 <nav>
 	...
 	<a href="/profile" title="PROFILE"> <img src="{% static 'images/smile_32-32.png' %}"> </a>
 </nav>
+
+...
+</body>
 ...
 ```
 
-**NOTE**: **`{% load static %}` must be added to the top of the html file to use the static files in the project.**
+**NOTE**: ***`{% load static %}` must be added to the top of the html file to use the static files in the project.***
 
 *The image will now be displayed on the navigation bar and will redirect to the profile page (which doesnt exist yet)*  
 
-**`collectstatic` command shall be used in the production environment to collect all the static files in the project to the `static_cdn` directory:**  
 
-```bash
-python manage.py collectstatic
-```
+## Adding Default Profile Image
 
-*This will collect all the static files in the project to the `static_cdn` directory*  
-
-*No need to use the command in development mode.*  
-
-
-### Adding Default Profile Image
-
-1. Create a new directory named `profile_images` in the `media_cdn` directory:
+*1. **Create a new directory named `profile_images` in the `media_cdn` directory:***
 
 ```bash
 mkdir media_cdn/profile_images
@@ -314,21 +308,22 @@ mkdir media_cdn/profile_images
 
 *This will be used to store the profile images of the users*  
 
-2. Add the `default.png` image to the `media_cdn/profile_images` directory:  
+
+*2. **Add the `default.png` image to the `media_cdn/profile_images` directory:***
 
 *This will be used as the default profile image for the users who don't upload their own profile image*  
 
-For example, [this image](https://www.iconninja.com/avatar-anonym-person-user-default-unknown-head-icon-15892) can be used as the default profile image.  
+*For example, [this image](https://www.iconninja.com/avatar-anonym-person-user-default-unknown-head-icon-15892) can be used as the default profile image.*  
 
-**NOTE**: *We can test the availability of the default profile picture later in Custom User Model section*  
+**NOTE:** *We will be able to test the availability of the default profile picture later in Custom User Model section*  
 
 
-### Adding & Using Goggle Icons
+## Using Goggle Icons
 
 **Optional** *This part can be skipped.*
 *However, it might be a nice touch, let alone the all the fun..*
 
-1. Getting the link to the google icons.
+*1. **Getting the link to the google icons.***
 
 - Go to the [Google Icons](https://fonts.google.com/icons) website
 - Visit the respective GitHub repository for the icons [here](https://github.com/google/material-design-icons)
@@ -338,7 +333,7 @@ For example, [this image](https://www.iconninja.com/avatar-anonym-person-user-de
 ```
 **NOTE**: *verify if this is the right link.. for me the second link in the repo worked not the 1st one*
 
-2. Adding the link to the `layout.html` file in the `templates` directory:
+*2. **Adding the link to the `layout.html` file in the `templates` directory:***
 
 ```html
 ...
@@ -351,7 +346,7 @@ For example, [this image](https://www.iconninja.com/avatar-anonym-person-user-de
 
 *Now the google icons can be used in the project*  
 
-3. Example of the link to the `Home` icon in the `layout.html` file:
+*3. **Example of the link to the `Home` icon in the `layout.html` file:***
 
 ```html
 ...
@@ -365,25 +360,30 @@ For example, [this image](https://www.iconninja.com/avatar-anonym-person-user-de
 ```
 *This will display the `Home` icon which is clickable and will redirect to the home page*  
 
-**NOTE**:  
+**NOTE:**    
 *To add any other icons simply use the name of the icon in the `<span ..>` tag*  
 *Or, alternatively, the complete `<span ..>` tag is available on [Google Icons](https://fonts.google.com/icons) website. When the icon is clicked, there is a `<span ..>` tag on the right side panel in the `Inserting the icon` section*  
 
 
-## Building Custom User Model
+# BUILDING CUSTOM USER MODEL
 
 **NOTE**: *If curious, take a look at the original `AstractBaseUser` and `BaseUserManager` models on the [Django GitHub](https://github.com/django/django/blob/main/django/contrib/auth/base_user.py)*
 
-1. Create a new Django app
+*1. **Create a new Django app:***
 
 ```bash
 python manage.py startapp account
 ```
 *This will create a new Django app in the project directory with the directory name `account`*
 
-2. Add the app to the installed apps in the `main/settings.py` file
+**NOTE: *If another `app_name` is used, make sure to replace `account` with the `app_name` in the following steps, (where necessary)***
+
+
+*2. **Add the app to the installed apps in the `main/settings.py` file***
 
 *Also adding the necessary parameter to tell Django to use our custom user model*
+
+*In the `main/settings.py` file:*
 
 ```python
 ...
@@ -397,7 +397,10 @@ INSTALLED_APPS = [
 ...
 ```
 
-3. Create a custom user model in the `account/models.py` file
+
+*3. **Create a Custom User Model***
+
+*In the `account/models.py` file:*
 
 ```python
 from django.db import models
@@ -477,15 +480,14 @@ class Account(AbstractBaseUser):
 
 ```
 
-**Note**: *`ImageField` is a part of the `Pillow` library. So, make sure it is installed before running the server*  
+**Note**: *`ImageField` is a part of the `Pillow` library. So, make sure it is installed before running the server.*  
 
-```bash
-pipenv install Pillow
-```
 
-4. Add the custom user model to the `account/admin.py` file
+*4. **Add the custom user model to the `account/admin.py` file:***
 
 *This will allow us to see the custom user model in the admin page and all the fields we specified*  
+
+*In the `account/admin.py` file:*
 
 ```python
 from django.contrib import admin
@@ -516,9 +518,10 @@ admin.site.register(Account, AccountAdmin)
 admin.site.unregister(Group)
 ``` 
 
-**NOTe**: *This is necessary to see the custom user model in the admin page, so Django knows how to display the custom user model*  
+**NOTE:** *This is needed to be able to view the Custom User Model in the admin page.*
 
-5. Making migrations
+
+*5. **Making migrations:***
 
 ```bash
 python manage.py makemigrations
@@ -526,29 +529,30 @@ python manage.py migrate
 ```
 *This will create the necessary migrations for the custom user model and apply them to the database*
 
-6. Create a superuser
+
+*6. **Create a superuser:***
 
 ```bash
 python manage.py createsuperuser
 ```
+
 *This is the necessary to be able to login to the admin page as well as see the custom user model we created*  
 *`createsuperuser` command will use the custom user model we created to create the superuser, where `email` will be used to login the user*    
 
-7. Run the server
+
+*7. **Run the server:***
 
 ```bash
 python manage.py runserver
 ```
 
 **Note:**  
-*At this point, we can now login to the admin panel and see the custom user model we created with the fields we specified.*  
-
-*The email will be used to login the user and the username will be displayed in the admin page*  
-
-*The default profile image (stored in the `media_cdn/profile_images` directory) shall be displayed via link in the admin page in the `Change account` --> `Profile Image` section once we click on the account email* 
+- *now we can login to the admin panel and see the custom user model we created with the fields we specified.*  
+- *user email will be used to login the user and the username will be displayed in the admin page*  
+- *default profile image (stored in the `media_cdn/profile_images` directory) shall be displayed via link in the admin page in the `Change account` --> `Profile Image` section once we click on the account email* 
 
 
-## Handling Case-Insensitive Input
+# HANDLING CASE-INSENSITIVE INPUT
 
 *This functionality ensures that the user can login with the email or username in any case. For this to work, we need to create a custom authentication backend module to handle the authentication process with case-insensitive email and username*  
 
