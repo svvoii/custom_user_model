@@ -121,7 +121,9 @@ TEMPLATES = [
 
 *6. **Create a `layout.html` file in the main `templates` directory:***
 
-*In `templates/layout.html` file:*
+**NOTE**: *We will breake down the `layout.html` file into smaller parts by adding `header.html`, `footer.html` files in the `templates` directory as well. This will make the `layout.html` file cleaner and easier to read*  
+
+*6.1. In `templates/layout.html` file:*
 
 ```html
 <!DOCTYPE html>
@@ -133,17 +135,89 @@ TEMPLATES = [
 </head>
 
 <body>
+	{% include 'header.html' %}
+
 	<div>
 		{% block content %}
+
 		{% endblock content %}
 	</div>
+
+	{% include 'footer.html' %}
 </body>
 
 </html>
 
 ```
 
-*7. **Create a `home.html` file in the `homepage/templates/homepage` directory:***
+**NOTE**:  
+- *The `{% block content %}` and `{% endblock content %}` are used to define the content of the page in the child templates, which will be created later*    
+- *The `{% include .. %}` is used to extend the `layout.html` file with the `header.html` and `footer.html` files*  
+
+
+*6.2. In `templates/header.html` file:*
+
+```html
+<style type="text/css">
+
+	nav {
+		display: flex;
+		justify-content: space-between;
+		background-color: lightgray;
+		padding: 10px;
+		border-bottom: 1px solid black;
+	}
+
+	nav a {
+		margin-right: 20px;
+		color: darkblue;
+		text-decoration: none;
+	}
+
+</style>
+
+<nav>
+
+	{% if request.user.is_authenticated %}
+
+	{% else %}
+
+	{% endif %}
+
+</nav>
+
+```
+
+**NOTE**:  
+*The `<style>` block is just a basic styling for the top navigation bar (for it not to look too ugly). This shall be styled properly with Bootstrap or CSS as a part of the frontend module*  
+*In the `<nav>` block we will add the links to the homepage, login, register, profile, logout pages, which shall appear based on the user authentication status*  
+
+
+- *In `templates/footer.html` file:*
+
+```html
+<style>
+	footer {
+		background-color: #333;
+		color: white;
+		text-align: center;
+		position: fixed;
+		bottom: 0;
+		width: 100%;
+	}
+</style>
+
+<footer>
+	<p> &copy; 2024 - All rights reserved, no BS 
+	<span class="material-symbols-outlined">copyright</span>
+	</p>
+</footer>
+```
+
+*Just an example*  
+
+
+*7. **Creating `home.html` file.***
 
 *In `homepage/templates/homepage/home.html` file:*
 
@@ -260,6 +334,8 @@ python manage.py collectstatic
 
 *This will allow us to use the static files (img, css, js etc) in the project*  
 
+**NOTE**: ***`{% load static %}` must be added to the top of the html file to use the static files in the project.***
+
 
 # USING STATIC IMAGES
 
@@ -269,6 +345,7 @@ python manage.py collectstatic
 mkdir static/images
 ```
 
+
 *2. **Add the images of choice to the `static/images` directory:***
 
 *For example, [emoticon smile icon](https://www.iconexperience.com/o_collection/icons/?icon=emoticon_smile)*  
@@ -276,26 +353,22 @@ mkdir static/images
 
 *3. **Adding the image to the html file of choice:***
 
-*For example adding the image to the `layout.html` file as a link to the profile page :*
+*Adding the image to the navigation bar in the `header.html` to display the image which will redirect to the profile page (which doesn't exist yet)*  
+
+*In the `templates/header.html` file:*
 
 ```html
-{% load static %}
-...
-<body>
 ...
 <nav>
-	...
-	<a href="/profile" title="PROFILE"> <img src="{% static 'images/smile_32-32.png' %}"> </a>
+
+	{% if request.user.is_authenticated %}
+		<a href="/profile" title="PROFILE"> <img src="{% static 'images/smile_32-32.png' %}"> </a>
+	{% else %}
+
+	{% endif %}
+
 </nav>
-
-...
-</body>
-...
 ```
-
-**NOTE**: ***`{% load static %}` must be added to the top of the html file to use the static files in the project.***
-
-*The image will now be displayed on the navigation bar and will redirect to the profile page (which doesnt exist yet)*  
 
 
 ## Adding Default Profile Image
@@ -306,7 +379,7 @@ mkdir static/images
 mkdir media_cdn/profile_images
 ```
 
-*This will be used to store the profile images of the users*  
+*This will be used to store the profile images of all users*  
 
 
 *2. **Add the `default.png` image to the `media_cdn/profile_images` directory:***
@@ -328,12 +401,17 @@ mkdir media_cdn/profile_images
 - Go to the [Google Icons](https://fonts.google.com/icons) website
 - Visit the respective GitHub repository for the icons [here](https://github.com/google/material-design-icons)
 - Copy the link to the icons : 
+
 ```html
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 ```
+
 **NOTE**: *verify if this is the right link.. for me the second link in the repo worked not the 1st one*
 
+
 *2. **Adding the link to the `layout.html` file in the `templates` directory:***
+
+*In the header of the `layout.html` file:*  
 
 ```html
 ...
@@ -346,34 +424,42 @@ mkdir media_cdn/profile_images
 
 *Now the google icons can be used in the project*  
 
-*3. **Example of the link to the `Home` icon in the `layout.html` file:***
+
+*3. **Example of the link to the `Home` icon.***
+
+*Adding the `Home` icon to the navigation bar in the `templates/header.html` file:*
 
 ```html
 ...
-<body>
+<nav>
 	<a href="/" title="HOME">
 	<span class="material-symbols-outlined">home</span>
 	</a>
+
+	{% if request.user.is_authenticated %}
 	...
-</body>
-...
+</nav>
 ```
+
 *This will display the `Home` icon which is clickable and will redirect to the home page*  
 
 **NOTE:**    
-*To add any other icons simply use the name of the icon in the `<span ..>` tag*  
-*Or, alternatively, the complete `<span ..>` tag is available on [Google Icons](https://fonts.google.com/icons) website. When the icon is clicked, there is a `<span ..>` tag on the right side panel in the `Inserting the icon` section*  
+- *To add any other icons simply use the name of the icon in the `<span ..>` tag*  
+- *Complete `<span ..>` tag is available on [Google Icons](https://fonts.google.com/icons) website. When any icon is clicked, there will be a `<span ..>` tag on the right side panel in the `Inserting the icon` section*  
+
 
 
 # BUILDING CUSTOM USER MODEL
 
 **NOTE**: *If curious, take a look at the original `AstractBaseUser` and `BaseUserManager` models on the [Django GitHub](https://github.com/django/django/blob/main/django/contrib/auth/base_user.py)*
 
+
 *1. **Create a new Django app:***
 
 ```bash
 python manage.py startapp account
 ```
+
 *This will create a new Django app in the project directory with the directory name `account`*
 
 **NOTE: *If another `app_name` is used, make sure to replace `account` with the `app_name` in the following steps, (where necessary)***
@@ -480,7 +566,8 @@ class Account(AbstractBaseUser):
 
 ```
 
-**Note**: *`ImageField` is a part of the `Pillow` library. So, make sure it is installed before running the server.*  
+**Note**:  
+- *`ImageField` is a part of the `Pillow` library. So, make sure it is installed before running the server.*  
 
 
 *4. **Add the custom user model to the `account/admin.py` file:***
@@ -536,8 +623,9 @@ python manage.py migrate
 python manage.py createsuperuser
 ```
 
-*This is the necessary to be able to login to the admin page as well as see the custom user model we created*  
-*`createsuperuser` command will use the custom user model we created to create the superuser, where `email` will be used to login the user*    
+**NOTE**:  
+- *This is necessary step that allows to login to the admin page*  
+- *`createsuperuser` command will use the custom user model we created to create the superuser, where `email` will be used to login the user*    
 
 
 *7. **Run the server:***
@@ -552,11 +640,41 @@ python manage.py runserver
 - *default profile image (stored in the `media_cdn/profile_images` directory) shall be displayed via link in the admin page in the `Change account` --> `Profile Image` section once we click on the account email* 
 
 
+
+# SETTING UP PROFILE IMAGE
+
+*The following code will display the profile image of the user in the navigation bar on the homepage if the user is authenticated.*
+
+*Adding the following code to the `header.html` file in the `templates` directory:*
+
+```html
+...
+<nav>
+	...
+	{% if request.user.is_authenticated %}
+		<p>{{ request.user.username }} is authenticated.</p>
+		<p>Profile image: {{ request.user.profile_image.url }}</p>
+		<img src="{{ request.user.profile_image.url }}" alt="LOGO" width="40" height="40">
+	{% else %}
+		<p>Not logged in</p>
+	{% endif %}
+</nav>
+...
+```
+
+**NOTE**:  
+- *We dont have yet the profile page nor the login page, so to check if the profile image (default.png) is displayed in the navigation bar, we can login to the admin page and then navigate to `http://localhost:8000`*
+- *This should display the profile image as well as show the username of the user and the link to the current profile image in the browser window*  
+
+
+
 # HANDLING CASE-INSENSITIVE INPUT
 
 *This functionality ensures that the user can login with the email or username in any case. For this to work, we need to create a custom authentication backend module to handle the authentication process with case-insensitive email and username*  
 
-1. Create a custom authentication backend in the `account/backends.py` file in the `account` app  
+*1. **Create a custom authentication backend class.***
+
+*In the `account/backends.py` file:*  
 
 ```python
 from django.contrib.auth import get_user_model
@@ -584,7 +702,7 @@ class CaseInsensitiveModelBackend(ModelBackend):
 				return user
 ```
 
-2. Add the custom authentication backend to the `main/settings.py` file
+*2. **Add the custom authentication backend to the `main/settings.py` file:***  
 
 ```python
 # after the AUTH_USER_MODEL adding the custom authentication backend
@@ -597,38 +715,12 @@ AUTHENTICATION_BACKENDS = [
 
 *This will allow us to authenticate the user if the email or username is entered in either upper or lower case*  
 
-3. Setting up profile image in the `layout.html` file
 
-*The following code will display the profile image of the user in the navigation bar on the homepage if the user is authenticated. We add this code to the `layout.html` file in the `templates` directory:*
+# REGISTRATION
 
-```html
-...
-<nav>
-	...
-	{% if request.user.is_authenticated %}
-		<p>{{ request.user.username }} is authenticated.</p>
-		<p>Profile image: {{ request.user.profile_image.url }}</p>
-		<img src="{{ request.user.profile_image.url }}" alt="LOGO" width="40" height="40">
-	{% else %}
-		<p>Not logged in</p>
-	{% endif %}
-</nav>
-...
-```
+## Adding Registration Page
 
-**NOTE**: *We dont have yet the profile page nor the login page, so to check if the profile image (default.png) is displayed in the navigation bar, we can login to the admin page and then navigate to `http://localhost:8000`*
-
-*This should display the profile image as well as show the username of the user and the link to the current profile image in the browser window*  
-
-
-## Adding Registration, Login, Logout, Password Reset, Profile Pages
-
-**NOTE**: *The is no styling applied to any of html files, so it looks a bit ugly.. no judgement please.. ;)*  
-
-
-### Registration Page
-
-1. Creating the followign new directory: `account/templates/account` and adding the `register.html` in there:
+*1. **Creating the followign new directory: `account/templates/account` and adding the `register.html` in there:***
 
 ```html
 {% extends 'layout.html' %}
@@ -646,7 +738,7 @@ AUTHENTICATION_BACKENDS = [
 
 		<input type="email" name="email" placeholder="Email address" required autofocus></br>
 		<input type="text" name="username" placeholder="Username" required></br>
-		<input type="text" name="username" placeholder="Username" required></br>
+		<input type="password" name="password1" placeholder="Password" required></br>
 		<input type="password" name="password2" placeholder="Confirm password" required></br>
 
 		{% for field in registration_form %}
@@ -669,9 +761,10 @@ AUTHENTICATION_BACKENDS = [
 {% endblock content %}
 ```
 
-2. Creating the `RegistrationForm` in the `account/forms.py` file:
 
-*First we create new file named `forms.py` in the `account` app directory and add the following class:*
+*2. **Creating the `RegistrationForm`***
+
+*First we create new file named `forms.py` in the `account` app directory and add the following class. So, in the `account/forms.py` file:***
 
 ```python
 from django import forms
@@ -704,14 +797,17 @@ class RegistrationForm(UserCreationForm):
 		except Exception as e:
 			return username
 		raise forms.ValidationError(f'Username {username} is already in use.')
+
 ```
 
 *If curious, take a look at the original `UserCreationForm` model on the [Django GitHub](https://github.com/django/django/blob/main/django/contrib/auth/forms.py)*  
 
 
-3. Adding the `register_view` function to the `account/views.py` file:
+*3. **Adding the `register_view` function.***
 
-*This function will handle the registration process and render the `register.html` template*
+*This function will handle the registration process and render the `register.html` template.*  
+
+*In the `account/views.py` file:*
 
 ```python
 from django.shortcuts import render, redirect
@@ -754,9 +850,11 @@ def det_redirect_if_exists(request):
 		if request.GET.get('next'):
 			redirect = str(request.GET.get('next'))
 	return redirect
+
 ```
 
-4. Adding the reference to the `register_view` function in the `main/urls.py` file:
+
+*4. **Adding the reference to the `register_view` function in the `main/urls.py` file:***
 
 ```python
 ...
@@ -769,7 +867,10 @@ urlpatterns = [
 ...
 ```
 
-5. Adding the link to the registration page in the `layout.html` file in the `templates` directory:
+
+*5. **Adding the link to the registration page.*** 
+
+*In the `templates/header.html` file:*  
 
 ```html
 <nav>
@@ -782,17 +883,19 @@ urlpatterns = [
 		<a href="{% url 'register' %}" title="REGISTER"> <span class="material-symbols-outlined">person_add</span>Register</a>
 	{% endif %}
 </nav>
-...
 ```
 
-*This will allow us to access the registration page at `http://localhost:8000/register` directly from the homepage*  
+**NOTE**:  
+- *This will allow us to access the registration page at `http://localhost:8000/register` directly from the homepage*  
+- *Also if there is an error pops up when trying to delete the user from the admin page.. this will be fixed later*  
 
-*Also there is an error pops up when trying to delete the user from the admin page.. this will be fixed later*  
 
 
-### Login, Logout
+# LOGIN AND LOGOUT
 
-1. Creating the `login.html` file in the `account/templates/account` directory:
+*1. **Creating the `login.html` file***
+
+*In the `account/templates/account/login.html` file:*
 
 ```html
 {% extends 'layout.html' %}
@@ -830,9 +933,12 @@ urlpatterns = [
 {% endblock content %}
 ```
 
-2. Creating new class in the `account/forms.py` file:
+
+*2. **Creating Authentication Form***
 
 *This class will be used to create the login form*
+
+*In the `account/forms.py` file:*   
 
 ```python
 ...
@@ -853,9 +959,11 @@ class AccountAuthenticationForm(forms.ModelForm):
 				raise forms.ValidationError('Invalid login')
 ```
 
-3. Adding the `login_view` function to the `account/views.py` file:
+*3. **Adding the `login_view` function***
 
 *This function will handle the login process and render the `login.html` template*
+
+*In the `account/views.py` file:*  
 
 ```python
 ...
@@ -895,9 +1003,11 @@ def det_redirect_if_exists(request):
 		if request.GET.get('next'):
 			redirect = str(request.GET.get('next'))
 	return redirect
+
 ```
 
-4. Adding the reference to the `login_view` function in the `main/urls.py` file:
+
+*4. **Adding the reference to the `login_view` function in the `main/urls.py` file:***
 
 ```python
 ...
@@ -911,7 +1021,10 @@ urlpatterns = [
 ...
 ```
 
-5. Adding the link to the login page in the `layout.html` file in the `templates` directory:
+
+*5. **Adding the link to the login page.*** 
+
+*In the `templates/header.html` file:***
 
 ```html
 ...
@@ -927,25 +1040,30 @@ urlpatterns = [
 		<a href="{% url 'register' %}" title="REGISTER"> <span class="material-symbols-outlined">person_add</span>Register</a>
 	{% endif %}
 </nav>
-...
 ```
 
 *This will allow us to access the login page at `http://localhost:8000/login` directly from the homepage. As well as to show the `Logout` option*
 
 
-### Password Reset Pages
 
-**NOTE**: *Resetting the password in the development environment is different from the production environment. In the development environment, the password reset link will be displayed in the console. In the production environment, the password reset link will be sent to the user's email, and the process is different*  
+# PASSWORD RESET
 
-The following steps will be done in the development environment:  
+**NOTE**:  
+- *Resetting the password in the development environment is different from the production environment.*  
+- *In the development environment, the password reset link will be displayed in the console.*  
+- *In the production environment, the password reset link will be sent to the user's email, and the process is different*   
 
-1. Adding the `password_reset` directory in the `templates` which is at the same level as the `account` app directory:
+***The following steps will be done in the development environment:***
+
+
+*1. **Adding the `password_reset` directory in the `templates` which is at the same level as the `account` app directory:***
 
 ```bash
 mkdir templates/password_reset
 ```
 
-2. Addting several files in the `password_reset` directory:  
+
+*2. **Addting several files in the `password_reset` directory:***  
 `password_change.html`  
 `password_change_done.html`  
 `password_reset_complete.html`  
@@ -1055,7 +1173,7 @@ The Open-Chat Team
 PASSWORD RESET
 ```
 
-3. Adding the following urls to the `main/urls.py` file:
+*3. **Adding the following urls to the `main/urls.py` file:***
 
 ```python
 ...
@@ -1079,9 +1197,9 @@ urlpatterns = [
 
 **NOTE**: *Here is the link to [auth views on Django GitHub](https://github.com/django/django/blob/main/django/contrib/auth/views.py) if curious. It contains all indicated above views. This also corresponds to the files we created in the `password_reset` directory*  
 
-4. Adding the necessary settings to the `main/settings.py` file:
 
-**NOTE**: *The following settings are valid for the development environment !! In the production environment, the settings are different. It will be necessary to set up the email server and send the actual email to the user. While in the development environment, the password reset link will be displayed in the terminal window*  
+*4. **Adding the necessary settings to the `main/settings.py` file:***
+
 
 ```python
 ...
@@ -1092,37 +1210,50 @@ if DEBUG:
 ...
 ```
 
-5. The following step would be to update the reference link in the `login.html` file in the `account/templates/account/login.html`. At the bottom of the file :
+**NOTE**:  
+- *The following settings are valid for the development environment !!*
+- *In the production environment, the settings are different. It will be necessary to set up the email server and send the actual email to the user.*
+- *In the development environment, the password reset link will be displayed in the terminal window*  
+
+
+*5. **Updating the reference link in the `login.html`***
+
+*In the `account/templates/account/login.html` file:*
 
 ```html
-...
-<div>
-	<a href="{% url 'password_reset' %}">Reset password?</a>
-</div>
-...
+{% block content %}
+	...
+
+	<div>
+		<a href="{% url 'password_reset' %}">Reset password?</a>
+	</div>
+{% endblock content %}
 ```
 
 *This shall be it for the password reset pages. The password reset link will be displayed in the terminal window when the user enters the email address in the password reset form*.  
 
 
-## ***Profile Page***
 
-### ***ADDING BASIC PROFILE PAGE***
+# PROFILE PAGE
 
-Lets first discuss the profile and its functionality.  
-Profile page will be used to display the user's profile information as well as to update the profile image.  
-Also profile page can have several states and functionalities :  
+***Profile page logic:***  
+
+*Profile page will be used to display the user's profile information as well as to update the profile image.  etc.*  
+
+*Also profile page can have several states and functionalities :* 
 
 - **is_self**: *This is where the user is viewing their own profile page and can change the profile image, password, link to friends..*
 - **is_user**: *This is where the user is viewing the profile page of another user and can send friend request..*  
 - **is_friend**: *This is where the user is viewing the profile page of a friend and can send messages, remove friend..*
 
-**NOTE**: *The end logic of how to represent a profile page can be quite complex and can be implemented in many ways. For now, we will implement the simple functionality of the profile page based on two events*:  
+**NOTE**: *We will implement the simple functionality of the profile page based on two events*:  
 - *The user is viewing their own profile page*
 - *The user is viewing the profile page of another user*
 
-1. Creating `profile.html` file in `account/templates/account/` directory:
 
+*1. **Creating `profile.html` file***
+
+*In `account/templates/account/profile.html` file:***
 
 ```html
 {% extends 'layout.html' %}
@@ -1201,7 +1332,13 @@ Also profile page can have several states and functionalities :
 
 ```
 
-2. Adding the `profile_view` function to the `account/views.py` file:
+**NOTE**:  
+- *Most of the logic in the `profile.html` is not implemented yet. Those are just placeholders for the future functionalities*  
+
+
+*2. **Adding the `profile_view` function.***
+
+*In `account/views.py` file:*  
 
 ```python
 ...
@@ -1241,9 +1378,10 @@ def profile_view(request, *args, **kwargs):
 	return render(request, 'account/profile.html', content)
 ```
 
-3. Adding new url file in the `account` app directory named `urls.py`:
 
-in the `account/urls.py` file:
+*3. **Adding new url file in the `account` app directory named `urls.py`:***
+
+*In the `account/urls.py` file:*
 
 ```python
 from django.urls import path
@@ -1256,14 +1394,14 @@ urlpatterns = [
 ]
 
 ``` 
-**NOTE**: *`<user_id>/` is a dynamic URL pattern that will be passed to the `profile_view` function in the `account/views.py` file.*  
-*`name` attribute is used to reference this URL pattern in the Django templates.*  
-*`app_name` attribute is used to namespace the URL pattern.*  
-*This is useful when you have multiple apps in your Django project and you want to avoid naming conflicts between URL patterns.*  
-*`app_name` attribute is used in the `main/urls.py` file to include the URL patterns from this file.*  
+**NOTE**:  
+- *`<user_id>/` is a dynamic URL pattern that will be passed to the `profile_view` function in the `account/views.py` file.*  
+- *`name` attribute is used to reference this URL pattern in the Django templates.*  
+- *`app_name` attribute is used to namespace the URL pattern. This is useful when you have multiple apps in your Django project and you want to avoid naming conflicts between URL patterns.*  
+- *`app_name`: `account` attribute is used in the `main/urls.py` file to include the URL patterns from this file.*  
 
 
-4. Adding the reference to the account urls in the `main/urls.py` file:
+*4. **Adding the reference to the account urls in the `main/urls.py` file:***
 
 ```python
 ...
@@ -1276,7 +1414,10 @@ urlpatterns = [
 ]
 ```
 
-5. Adding the link to the profile page in the `layout.html` file in the `templates` directory:
+
+*5. **Adding the link to the profile page*** 
+
+*In the `templates/header.html` directory:***
 
 ```html
 <nav>
@@ -1289,20 +1430,27 @@ urlpatterns = [
 	{% endif %}
 </nav>
 ```
+
 *This change to the navbar will allow us to access profile page by clicking on the profile image in the navigation bar*  
 
-**NOTE**: *`account:profile` is the namespace of the URL pattern we created in the `account/urls.py` file*  
-*So, that `account` is the app name indicated both in the `account/urls.py` as `app_name = 'account'` and in the `main/urls.py` as `namespace='account'`*  
-*`profile` is the name of the URL pattern we created in the `account/urls.py` file*  
+**NOTE**:  
+- *`account:profile` is the namespace of the URL pattern we created in the `account/urls.py` file*  
+- *`account` is the app name indicated both in the `account/urls.py` as `app_name = 'account'` and in the `main/urls.py` as `namespace='account'`*  
+- *`profile` is the name of the URL pattern we created in the `account/urls.py` file*  
 
 *We can go ahead and access the profile page at `http://localhost:8000/profile`*  
 
 
-### ***IMPLEMENTING USER SEARCH***  
+
+# USER SEARCH
+
+***IMPLEMENTING USER SEARCH***  
 
 *This will allow the user to search for other users by their username or email address. The search results will be displayed in the search page*  
 
-1. Creating the `search_results.html` file in the `account/templates/account` directory:
+*1. **Creating the `search_results.html` file***
+
+*In the `account/templates/account/search_results.html` file:*
 
 ```html
 {% extends 'layout.html' %}
@@ -1349,7 +1497,10 @@ urlpatterns = [
 {% endblock content %}
 ```
 
-2. Adding the `account_search_view` function to the `account/views.py` file:
+
+*2. **Adding the `account_search_view` function***
+
+*In the `account/views.py` file:*
 
 ```python
 ...
@@ -1370,7 +1521,9 @@ def account_search_view(request, *args, **kwargs):
 	return render(request, 'account/search_results.html', context)
 ```
 
-3. Adding the reference to the `account_search_view` function in the `account/urls.py` file:
+*3. **Adding the reference to the `account_search_view` function***
+
+*In the `main/urls.py` file:*
 
 ```python
 ...
@@ -1383,11 +1536,12 @@ urlpatterns = [
 ]
 ```
 
-4. Modifying the navbar to show the search bar.
+**NOTE:** *Make sure to add all the necessary imports in the `account/views.py` file.*  
 
-*Currently the navbar in the `layout.html` file in the main `templates` directory. We gonna move the navbar to its own file `header.html` in the `templates` to make it more readable and maintainable*  
 
-So, in the `templates/header.html` file:
+*4. **Modifying the navbar to show the search bar.***
+
+*This is how the `templates/header.html` file can look like at this point:*
 
 ```html
 <style type="text/css">
@@ -1431,36 +1585,10 @@ So, in the `templates/header.html` file:
 </nav>
 ```
 
-5. Adding another separate file to render the footer in the `templates` directory:
-
-So, for the same reason of better maintainability and readability, creating a new file `templates/footer.html`:
-
-```html
-<style>
-	footer {
-		background-color: #333;
-		color: white;
-		text-align: center;
-		position: fixed;
-		bottom: 0;
-		width: 100%;
-	}
-</style>
-
-<footer>
-	<p> &copy; 2024 - All rights reserved, no BS 
-	<span class="material-symbols-outlined">copyright</span>
-	</p>
-</footer>
-```
-
-**NOTE**: *The `<style..` tags in both header and footer are used to style the navigation bar and footer respectively for a better visual, it is still ugly.. but better. The styling shall be done separately in any desirable way with bootstrap (as minor project module) or manual css, etc.. Current styling is temporary*
-
 **NOTE**: *The `<form..>` tag in header is used to create a search bar in the navigation bar. The search bar will be used to search for other users by their username or email address*  
 
-5. Modify the `layout.html` file to include the `header.html` and `footer.html` files:
 
-*This is how the `templates/layout.html` file can look like at this point:*
+***This is how the `templates/layout.html` file can look like at this point:***
 
 ```html
 {% load static %}
@@ -1497,16 +1625,17 @@ So, for the same reason of better maintainability and readability, creating a ne
 </html>
 ```
 
-**NOTE**: *The `{% include 'header.html' %}` and `{% include 'footer.html' %}` syntax is used to include the `header.html` and `footer.html` files in the `layout.html` file. This will display the navigation bar on teh top and the footer at the bottom on the homepage*
-
 *At this point, we can now access the search page at `http://localhost:8000/search` and search for other users by their username or any characters in tehir username*  
 
 
-### ***EDIT ACCOUNT FUNCTIONALITY***
+
+# EDIT ACCOUNT FUNCTIONALITY
 
 *This will allow the user to edit their account information, such as the email address, username, and profile image. The user will be able to update their account information in the edit account page*  
 
-1. Creating the `edit_profile.html` file in the `account/templates/account` directory:
+*1. **Creating the `edit_profile.html` file***
+
+*In the `account/templates/account/edit_profile.html` file:*  
 
 ```html
 {% extends 'layout.html' %}
