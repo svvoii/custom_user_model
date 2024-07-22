@@ -325,16 +325,17 @@ python manage.py collectstatic
 *By creating `static_cdn` and `media_cdn` directories, we can test the availability of the static files in the project in the development environment. (No need to run the `collectstatic` for now).*
 
 
-*4. **Adding `load static` to the top of the `layout.html` file in the `templates` directory:***
+*4. **Adding `load static` to the top of the `layout.html` and `header.html` files in the `templates` directory:***
 
 ```html
 {% load static %}
 ...
 ```
 
-*This will allow us to use the static files (img, css, js etc) in the project*  
+**NOTE:**  
+- *This line needs to be added to all the html files where the static files are used. To `layout.html` as well as to the `header.html` and `footer.html` files if the static files are referenced there.*
+- *This will allow us to use the static files (img, css, js etc) in the project*  
 
-**NOTE**: ***`{% load static %}` must be added to the top of the html file to use the static files in the project.***
 
 
 # USING STATIC IMAGES
@@ -811,7 +812,7 @@ class RegistrationForm(UserCreationForm):
 
 ```python
 from django.shortcuts import render, redirect
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse
 
 from account.forms import RegistrationForm
@@ -966,6 +967,9 @@ class AccountAuthenticationForm(forms.ModelForm):
 *In the `account/views.py` file:*  
 
 ```python
+from django.contrib.auth import authenticate, login, logout
+
+from account.forms import RegistrationForm, AccountAuthenticationForm
 ...
 
 def logout_view(request):
@@ -1005,6 +1009,10 @@ def det_redirect_if_exists(request):
 	return redirect
 
 ```
+
+**NOTE:**  
+- *Make sure the proper imports are added on the top of the file : `from django.contrib.auth import authenticate, login, logout` !*  
+- *Make sure to include the new form : `AccountAuthenticationForm` as well*  
 
 
 *4. **Adding the reference to the `login_view` function in the `main/urls.py` file:***
@@ -1417,28 +1425,31 @@ urlpatterns = [
 
 *5. **Adding the link to the profile page*** 
 
-*In the `templates/header.html` directory:***
+*In the `templates/header.html` directory (this is how the navbar block might look like at this point):***
 
 ```html
+...
 <nav>
-	...
+	<a href="/" title="HOME"> <span class="material-symbols-outlined">home</span></a>
+
 	{% if request.user.is_authenticated %}
-		...
-		<a href="{% url 'account:profile' user_id=request.user.id %}" title="PROFILE"> <img src="{{ request.user.profile_image.url }}" alt="LOGO" width="40" height="40"></a>
+		<a href="{% url 'account:profile' user_id=request.user.id %}" title="PROFILE"> 
+			<img src="{{ request.user.profile_image.url }}" alt="LOGO" width="40" height="40">
+		</a>
+
+		<a href="{% url 'logout' %}" title="LOGOUT"> <span class="material-symbols-outlined">logout</span>Logout</a>
 	{% else %}
-		...
+		<a href="{% url 'login' %}" title="LOGIN"> <span class="material-symbols-outlined">login</span>Login</a>
+		<a href="{% url 'register' %}" title="REGISTER"> <span class="material-symbols-outlined">person_add</span>Register</a>
 	{% endif %}
 </nav>
 ```
-
-*This change to the navbar will allow us to access profile page by clicking on the profile image in the navigation bar*  
 
 **NOTE**:  
 - *`account:profile` is the namespace of the URL pattern we created in the `account/urls.py` file*  
 - *`account` is the app name indicated both in the `account/urls.py` as `app_name = 'account'` and in the `main/urls.py` as `namespace='account'`*  
 - *`profile` is the name of the URL pattern we created in the `account/urls.py` file*  
-
-*We can go ahead and access the profile page at `http://localhost:8000/profile`*  
+- *We can access the profile page by clicking on the profile image in the navigation bar, once the user is logged in*  
 
 
 
@@ -1508,7 +1519,7 @@ def account_search_view(request, *args, **kwargs):
 	context = {}
 
 	if request.method == 'GET':
-		search_query = request.GET.get('q')
+		search_query = request.GET.get('q', '') # ..getting the search query from the URL (will default to an empty string if none)
 		if len(search_query) > 0:
 			# the following query will return all the accounts whose email or username contains the search query
 			search_results = Account.objects.filter(email__icontains=search_query).filter(username__icontains=search_query).distinct()
@@ -1544,6 +1555,7 @@ urlpatterns = [
 *This is how the `templates/header.html` file can look like at this point:*
 
 ```html
+{% load static %}
 <style type="text/css">
 
 	nav {
@@ -1571,10 +1583,13 @@ urlpatterns = [
 	</form>
 
 	{% if request.user.is_authenticated %}
-		<a href="{% url 'account:profile' user_id=request.user.id %}" title="PROFILE"> <img src="{{ request.user.profile_image.url }}" alt="LOGO" width="32" height="32">
+		<a href="{% url 'account:profile' user_id=request.user.id %}" title="PROFILE"> 
+			<img src="{{ request.user.profile_image.url }}" alt="LOGO" width="32" height="32">
 			{{ request.user.username }}
 		</a>
-		<a href="{% url 'logout' %}" title="LOGOUT"> <span class="material-symbols-outlined">logout</span>
+
+		<a href="{% url 'logout' %}" title="LOGOUT"> 
+			<span class="material-symbols-outlined">logout</span>
 			Logout
 		</a>
 	{% else %}
@@ -1585,10 +1600,12 @@ urlpatterns = [
 </nav>
 ```
 
-**NOTE**: *The `<form..>` tag in header is used to create a search bar in the navigation bar. The search bar will be used to search for other users by their username or email address*  
+**NOTE:**  
+- *The `<form..>` tag in header is used to create a search bar in the navigation bar.*  
+- *The search bar will be used to search for other users by their username or email address*  
 
 
-***This is how the `templates/layout.html` file can look like at this point:***
+***Also, this is how the `templates/layout.html` file can look like at this point:***
 
 ```html
 {% load static %}
@@ -1625,7 +1642,7 @@ urlpatterns = [
 </html>
 ```
 
-*At this point, we can now access the search page at `http://localhost:8000/search` and search for other users by their username or any characters in tehir username*  
+*At this point, we can use the search bar in the navigation bar to search for other users by their username or email.*  
 
 
 
@@ -1646,12 +1663,13 @@ urlpatterns = [
 <div>
 	<img src="{{ form.initial.profile_image.url }}" alt="profile_image" width="128" height="128">
 </div>
+
 <form method="post" enctype="multipart/form-data">
 	{% csrf_token %}
 	<input type="file" name="profile_image">
+
 	<h6>Email</h6>
-	<input type="email" name="email" id="id_input_email" placeholder="Email address" required autofocus value={{ form.initial.email }}> <h6 class="mt-4 field-heading">Username</h6>
-	<input type="text" name="username" id="id_input_username" placeholder="Username" required value="{{ form.initial.username }}">
+	<input type="email" name="email" id="id_input_email" placeholder="Email address" required autofocus value={{ form.initial.email }}> 
 	<label>
 		<input type="checkbox" name="hide_email" id="id_input_hide_email"
 		{% if form.initial.hide_email %}
@@ -1659,6 +1677,9 @@ urlpatterns = [
 		{%endif%}>
 		Hide Email
 	</label>
+
+	<h6 class="mt-4 field-heading">Username</h6>
+	<input type="text" name="username" id="id_input_username" placeholder="Username" required value="{{ form.initial.username }}">
 
 	{% for field in form %}
 	<p>
@@ -1682,7 +1703,10 @@ urlpatterns = [
 {% endblock content %}
 ```
 
-2. Adding `AccountUpdateForm` class to the `account/forms.py` file:
+
+*2. **Adding `AccountUpdateForm` class to the `account/forms.py` file:***
+
+*In the `account/forms.py` file:*
 
 ```python
 ...
@@ -1718,7 +1742,10 @@ class AccountUpdateForm(forms.ModelForm):
 		return account
 ```
 
-3. Adding the `edit_profile_view` function to the `account/views.py` file:
+
+*3. **Adding the `edit_profile_view` function***
+
+*In the `account/views.py` file:*
 
 ```python
 ...
@@ -1744,7 +1771,6 @@ def edit_profile_view(request, *args, **kwargs):
 		if form.is_valid():
 			form.save()
 			return redirect('account:profile', user_id=account.pk)
-			# context['success_message'] = "Updated"
 		else:
 			form = AccountUpdateForm(
 				request.POST,
@@ -1774,17 +1800,20 @@ def edit_profile_view(request, *args, **kwargs):
 	return render(request, 'account/edit_profile.html', context)
 ``` 
 
-4. Adding a global variable to the `main/settings.py` file:
+
+*4. **Adding a global variable to the `main/settings.py` file:***
 
 *This is used to limit the size of the profile image that the user can upload to the server.*
 
 ```python
 ...
-# This is to set a global variable for the maximum size od the uploaded profile image (5MB)
+# This is to set a global variable for the maximum size of the uploaded profile image (5MB)
 DATA_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
 ``` 
 
-5. Adding the reference to the `edit_account_view` function in the `account/urls.py` file:
+*5. **Adding the reference to the `edit_account_view` function***
+
+*In the `account/urls.py` file:*
 
 ```python
 ...
@@ -1797,9 +1826,11 @@ urlpatterns = [
 ]
 ```
 
-6. Adding the link to the edit profile page in the `profile.html` file in the `account/templates/account` directory:
+*6. **Adding the link to the edit profile page in the `profile.html` file***
 
-*In order to access the edit profile page, we need to add a link to the edit profile page in the profile page. In there looking for `<a>` tag with `Update` text:* 
+*In the `account/templates/account/profile.html` file:*
+
+*..looking for `<a>` tag with `Update` text in it:* 
 
 ```html
 ...
@@ -1811,32 +1842,25 @@ urlpatterns = [
 ...
 ```
 
-*This will allow us to access the edit profile page at `http://localhost:8000/profile/edit`. From the profile page, we can click on the `Update` link to access the edit profile page*  
-
-*This shall allow us to update the profile image, email address, username.*
-
-**NOTE**: *Update image functionality is quite basic and can be improved. For example, the user can crop the image, as well as the experience of uploading the image can be improved.*  
-
-*However, that would require implementing considerable amount of javascript logic on the client side (web browser) using external libraries, as well as python functions on the backend to be able to crop the image and save it.*  
-
-*This is not an obligatory part of this project.*  
-
-*For now, we will keep it simple and focus on the Django python backend.*
+**NOTE:**  
+- *This will allow access the edit profile page by clicking on the `Update` link on the profile page*  
+- *This shall allow us to update the profile image, email address, username.*  
 
 
-## ***FRIENDS SYSTEM***
 
-### ***ADDING FRIENDS APP***
+# IMPLEMENTING FRIENDS SYSTEM
 
-*The friends system will be managed by a separate app `friends` in the Django project. The friends app will be used to manage the friend requests, friends, and messages between friends.*  
+*We will manage friends system in a separate django app `friends`.*  
 
-1. Creating a new app named `friends`:
+*1. **Creating a new app named `friends`:***
 
 ```bash
 python manage.py startapp friends
 ```
 
-2. Adding the `friends` app to the `INSTALLED_APPS` list in the `main/settings.py` file:
+*2. **Adding the `friends` app to the `INSTALLED_APPS` list.***
+
+*In the `main/settings.py` file:*
 
 ```python
 ...
@@ -1847,9 +1871,14 @@ INSTALLED_APPS = [
 ...
 ```
 
-3. Creating the `models.py` file in the `friends` app directory:
+
+# FRIENDS MODEL
+
+*1. **Creating the `models.py` file in the `friends` app directory.***
 
 *Here we will create the `FriendList` model to store the friends of the user, the `FriendRequest` model to store the friend requests.*  
+
+*In the `friends/models.py` file:*
 
 ```python
 from django.db import models
@@ -1919,14 +1948,19 @@ class FriendRequest(models.Model):
 		self.save()
 ```
 
-**NOTE**: *The `FriendList` table shall be created as soon as new user is created. So, we would need to add another function to the `Account` model later.*  
+**NOTE:**  
+- *The `FriendList` table shall be created as soon as new user is created. We would need to add another function to the `Account` model later.*  
+- *Each friend request will be saved in the `FriendRequest` table.*
+- *`is_active` field will be used to determine if the friend request is active or not.*
+- *If friend request is active, it means that the request has not been accepted or declined yet.*
+- *All requests will be available in the `FriendRequest` table, in database, even if they are declined or canceled.*    
 
-*Each friend request will be saved in the `FriendRequest` table. The `is_active` field will be used to determine if the friend request is active or not. If the friend request is active, it means that the request has not been accepted or declined yet. All requests will be available in the `FriendRequest` table, in database, even if they are declined or canceled.*  
 
-
-4. Adding a class `FriendListAdmin` to the `friends/admin.py` file:
+*2. **Adding `FriendListAdmin` class to the `friends/admin.py` file:***
 
 *This class will be used to display the `FriendList` model in the Django admin page*
+
+*In the `friends/admin.py` file:*
 
 ```python
 from django.contrib import admin
@@ -1955,7 +1989,8 @@ class FriendRequestAdmin(admin.ModelAdmin):
 admin.site.register(FriendRequest, FriendRequestAdmin)
 ```
 
-5. Making migrations and migrating the database:
+
+*3. **Making migrations and migrating the database:***
 
 ```bash
 python manage.py makemigrations
@@ -1963,24 +1998,26 @@ python manage.py makemigrations
 python manage.py migrate
 ```
 
-*At this point, the `FriendList` and `FriendRequest` models will be created in the database*  
-*Respective `Friend list` and `Friend requests` sections can be seen in the admin pannel*  
+**NOTE:**  
+- *At this point, the `FriendList` and `FriendRequest` models will be created in the database*  
+- *Respective `Friend list` and `Friend requests` sections can be seen on the admin pannel*  
 
 
-### ***IMPLEMENTING FRIENDS SYSTEM***
 
-*This will be the logic to view the profile page from the friends perspective:*
---> `is_self`: 
-`True`: *..user is viewing their own profile page*  
-`False`: *..user is viewing the profile page of another user*  
---> `is_friend`:  
+# FRIENDS SYSTEM STRUCTURE AND LOGIC
+
+***The following will be our logic to view the profile page from the friends system perspective:***   
+--> if `is_self`:   
+`True`: *..user is viewing their own profile page*    
+`False`: *..user is viewing the profile page of another user*    
+--> if `is_friend`:  
 `True`: *..user is viewing the profile page of a friend*  
 `False`: *..user is not viewing the profile page of a NON-friend*   
 - `NO_REQUEST_SENT`: *..no friend request has been sent to this user*
 - `SENT_BY_YOU`: *..you have sent a friend request to this user*  
 - `THEY_SENT_TO_YOU`: *..this user has sent a friend request to you*  
 
-So, there will be 5 possible states of the profile page:  
+***Given this logic, there will be 5 possible states to view the profile page:***    
 1. `is_self` = `True` - *..user is viewing their own profile page*  
 2. `is_friend` = `True` - *..user is viewing the profile page of a friend*  
 3. `is_friend` = `False` = `NO_REQUEST_SENT` - *..user is not viewing the profile page of a NON-friend*  
@@ -1988,11 +2025,12 @@ So, there will be 5 possible states of the profile page:
 5. `is_friend` = `False` = `THEY_SENT_TO_YOU` - *..this user has sent a friend request to you*  
 
 
-#### ***ADDING PROFILE VIEW FUNCTIONALITY***
 
-1. Creating new file in `friends` app directory named `friend_request_status.py`:
+# PROFILE VIEW FUNCTIONALITY
 
-in `friends/friend_request_status.py` file:  
+*1. **Creating new file in `friends` app directory named `friend_request_status.py`:***
+
+*In `friends/friend_request_status.py` file:*  
 
 ```python
 from enum import Enum
@@ -2003,7 +2041,12 @@ class FriendRequestStatus(Enum):
 	THEY_SENT_TO_YOU = 2
 ```
 
-2. Creating a utility function to get the friend request status in the `friends/utils.py` file:
+*This will represent the status of the friend request*  
+
+
+*2. **Creating a utility function to get the friend request status***
+
+*Creating new file `friends/utils.py` with the following function:*  
 
 ```python
 from frineds.models import FriendRequest
@@ -2017,11 +2060,12 @@ def get_friend_request_or_false(sender, receiver):
 
 ```
 
-3. Adding / changing the `profile_view` function in the `account/views.py` file:
 
-*So, in the `account/views.py` file, we will add the logic to get the friend request status in the `profile_view` function*  
+*3. **Adding / changing the `profile_view` function***
 
-*This is how the `profile_view` function can look like at this point:*  
+*We are adding the logic to get the friend request status in the `profile_view` function*  
+
+*In the `account/views.py` file (this is how the `profile_view` function can look like at this point):*  
 
 ```python
 ...
@@ -2105,128 +2149,18 @@ def profile_view(request, *args, **kwargs):
 ...
 ```
 
-**NOTE**: *The following `profile.html` file contains the logic to display the friend request button based on the friend request status. I used forms with POST requests for that matter. The file contains functionality which will be implemented in the next steps.*
-
-```html
-{% extends 'layout.html' %}
-{% load static %}
-
-{% block content %}
-
-{% if messages %}
-	{% for message in messages %}
-		<li{% if message.tags %} class="{{ message.tags }}"{% endif %}>
-			{{ message }}
-		</li>
-	{% endfor %}
-{% endif %}
-
-<img src="{{ request.user.profile_image.url }}" alt="Profile Image" width="64" height="64">
-<p>Email</p>
-{%  if is_self %}
-	<h5>{{ email }}</h5>
-{% else %}
-	{% if hide_email %}
-		<h5>**********</h5>
-	{% else %}
-		<h5>{{ email }}</h5>
-	{% endif %}
-{% endif %}
-<p>Username</p>
-<h5>{{ username }}</h5>
-
-<!-- If Auth user is viewing their own profile -->
-{% if is_self %}
-	<a href="{% url 'account:edit' user_id=id %}">Update</a></br>
-	<a href="{% url 'password_change' %}">Change password</a></br>
-{% endif %}
-
-{% if request.user.is_authenticated %}
-
-	<!-- THEM to YOU -->
-	{% if request_sent == 2 %}
-	<div>
-		<span>Accept Friend Request</span>
-		<form method="POST" action="{% url 'friends:accept_friend_request' %}">
-			{% csrf_token %}
-			<input type="hidden" name="friend_request_id" value="{{ pending_friend_request_id }}">
-			<input type="submit" value="Accept">
-		</form>
-		<form method="POST" action="{% url 'friends:decline_friend_request' %}">
-			{% csrf_token %}
-			<input type="hidden" name="friend_request_id" value="{{ pending_friend_request_id }}">
-			<input type="submit" value="Decline">
-		</form>
-	</div>
-	{% endif %}
-
-	<!-- Cancel Friend Request / Send Friend Request / Remove Friend -->
-	{% if is_friend == False and is_self == False %}
-		<!-- You sent them a request -->
-		{% if request_sent == 1 %}
-			<form method="POST" action="{% url 'friends:cancel_friend_request' %}">
-				{% csrf_token %}
-				<input type="hidden" name="friend_request_id" value="{{ pending_friend_request_id }}">
-				<input type="submit" value="Cancel Friend Request">
-			</form>
-		{% endif %}
-
-		<!-- No requests have been sent -->
-		{% if request_sent == 0 %}
-			<form method="POST" action="{% url 'friends:send_friend_request' %}">
-				{% csrf_token %}
-				<input type="hidden" name="receiver_id" value="{{ id }}">
-				<input type="submit" value="Send Friend Request">
-			</form>
-		{% endif %}
-	{% endif %}
-		
-	{% if is_friend %}
-		<button> Friends </button>
-		<form method="POST" action="{% url 'friends:remove_friend' %}">
-			{% csrf_token %}
-			<input type="hidden" name="friend_id" value="{{ id }}">
-			<input type="submit" value="Unfriend">
-		</form>
-	{% endif %}
-	
-	<!-- Friend list link --><br>
-	<a href="#">
-		<span> contact_page </span></br>
-		<span> Friends ({{ friends|length }}) </span></br>
-	</a>
-
-	{% if friend_request %}
-	<!-- Friend requests -->
-		<a href="{% url 'friends:friend_requests' user_id=id %}">
-			<span> person_add </span></br>
-			<span> Friend Requests ({{ friend_request|length }}) </span></br>
-		</a>
-	{% endif %}
-
-	{% if is_friend %}
-		<div onclick="createOrReturnPrivateChat('{{ id }}')">
-			<span> message </span></br>
-			<span> Message </span></br>
-		</div>
-	{% endif %}
-
-{% endif %}
-	
-{% endblock content %}
-
-```
-
-*At this point, we can see the profile page given its current state. We also can visit the profile page of another user and see the appropriate friend request button.*  
-
-*Next step would be to add the functionality and logic to send the friend request*  
+**NOTE:**  
+- *At this point, we can not see the changes made on the profile page. Continue with the following section to add respective view functions.*
 
 
-#### ***SENDING FRIEND REQUEST***  
 
-1. Creating the forms which correspond to each of the friend request actions in the `friends/forms.py` file:
+# SENDING FRIEND REQUEST
 
-*First creating `friends/forms.py` file in the `friends` app directory:*  
+*1. **Creating the forms which correspond to each of the friend request actions.***
+
+*First creating `friends/forms.py` file in the `friends` app directory.*  
+
+*In the `friends/forms.py` file:*
 
 ```python
 from django import forms
@@ -2241,7 +2175,9 @@ class SendFriendRequestForm(forms.Form):
 
 ```
 
-2. Adding respective views to the `friends/views.py` file:
+*2. **Adding respective views***
+
+*In the `friends/views.py` file:*
 
 ```python
 from django.http import HttpResponse
@@ -2267,7 +2203,10 @@ def send_friend_request_view(request):
 
 ```
 
-3. Including the forms to the `profile.html` file in the `account/templates/account` directory:
+
+*3. **Including the forms to the `profile.html` file.***
+
+*In the `account/templates/account/profile.html` file:*  
 
 ```html
 {% extends 'layout.html' %}
@@ -2376,7 +2315,9 @@ def send_friend_request_view(request):
 {% endblock content %}
 ```
 
-4. Creating the `friends/urls.py` file in the `friends` app directory:
+*4. **Creating the `urls.py` file in the `friends` app directory:***
+
+*In the `friends/urls.py` file:*  
 
 ```python
 from django.urls import path
@@ -2389,7 +2330,8 @@ urlpatterns = [
 ]
 ```
 
-5. Adding the reference to the `friends` app urls in the `main/urls.py` file:
+
+*5. **Adding the reference to the `friends` app in the `main/urls.py` file:***
 
 ```python
 ...
@@ -2400,7 +2342,10 @@ urlpatterns = [
 ]
 ```
 
-**NOTE: At this point `send_friend_request_view` and `cancel_friend_request_view` functions have been tested and are working as expected...**
+**NOTE:**  
+- *We can now send friend requests to other users by clicking on the `Send Friend Request` button on the profile page*  
+- *At this point `send_friend_request_view` and `cancel_friend_request_view` functions should be working as expected.*
+
 
 
 #### ***ADDING FRIEND REQUESTS PAGE***
