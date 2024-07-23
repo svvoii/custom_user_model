@@ -14,6 +14,13 @@ This repository contains the code for the tutorial on how to create a custom use
 - Profile page with personal info update functionality
 <br><br>
 
+**NOTE:** 
+- *Some functionas and code snippets in this README file might not be the same as in the files in this repository.*
+- *The code in this README file is updated and tested, reproduced in a new Django project.*
+
+<br><br>
+
+
 
 
 # CREATING NEW DJANGO PROJECT
