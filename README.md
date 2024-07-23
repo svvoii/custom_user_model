@@ -12,6 +12,7 @@ This repository contains the code for the tutorial on how to create a custom use
 - Custom forms for registration and login pages
 - Password reset functionality
 - Profile page with personal info update functionality
+<br><br>
 
 
 
@@ -53,6 +54,7 @@ pipenv install django
 ```bash
 pipenv install Pillow
 ```
+<br>
 
 *2. **Create a new Django project***
 
@@ -67,6 +69,7 @@ django-admin startproject main .
 ```bash
 pip freeze > requirements.txt
 ```
+<br>
 
 
 ## Creating Homepage App and Templates
@@ -76,6 +79,7 @@ pip freeze > requirements.txt
 ```bash
 python manage.py startapp homepage
 ```
+<br>
 
 *2. **Adding the `homepage` app to the `INSTALLED_APPS` list in the `main/settings.py` file:***
 
@@ -85,12 +89,14 @@ INSTALLED_APPS = [
 	'homepage',
 ]
 ```
+<br>
 
 *3. **Create a new directory named `templates` at the same level with `manage.py` file***
 
 ```bash
 mkdir templates
 ```
+<br>
 
 *4. **Create new directories named `homepage/templates` and `homepage/templates/homepage`:***
 
@@ -98,6 +104,7 @@ mkdir templates
 mkdir homepage/templates
 mkdir homepage/templates/homepage
 ``` 
+<br>
 
 *5. **Add the `templates` directory to the `DIRS` list***
 
@@ -118,10 +125,12 @@ TEMPLATES = [
 ```
 
 **NOTE:** *This will allow Django to look for templates in the main `templates` directory as well as `templates` in the app directories*  
+<br>
 
 *6. **Create a `layout.html` file in the main `templates` directory:***
 
 **NOTE**: *We will breake down the `layout.html` file into smaller parts by adding `header.html`, `footer.html` files in the `templates` directory as well. This will make the `layout.html` file cleaner and easier to read*  
+<br>
 
 *6.1. In `templates/layout.html` file:*
 
@@ -153,6 +162,7 @@ TEMPLATES = [
 **NOTE**:  
 - *The `{% block content %}` and `{% endblock content %}` are used to define the content of the page in the child templates, which will be created later*    
 - *The `{% include .. %}` is used to extend the `layout.html` file with the `header.html` and `footer.html` files*  
+<br>
 
 
 *6.2. In `templates/header.html` file:*
@@ -259,6 +269,8 @@ urlpatterns = [
 ```
 
 *At this point, we can now run the server and see the homepage template we created at `http://localhost:8000`*  
+<br><br>
+
 
 
 # REFERENCING STATIC FILES
@@ -335,6 +347,7 @@ python manage.py collectstatic
 **NOTE:**  
 - *This line needs to be added to all the html files where the static files are used. To `layout.html` as well as to the `header.html` and `footer.html` files if the static files are referenced there.*
 - *This will allow us to use the static files (img, css, js etc) in the project*  
+<br><br>
 
 
 
@@ -370,6 +383,7 @@ mkdir static/images
 
 </nav>
 ```
+<br>
 
 
 ## Adding Default Profile Image
@@ -390,6 +404,7 @@ mkdir media_cdn/profile_images
 *For example, [this image](https://www.iconninja.com/avatar-anonym-person-user-default-unknown-head-icon-15892) can be used as the default profile image.*  
 
 **NOTE:** *We will be able to test the availability of the default profile picture later in Custom User Model section*  
+<br>
 
 
 ## Using Goggle Icons
@@ -408,6 +423,7 @@ mkdir media_cdn/profile_images
 ```
 
 **NOTE**: *verify if this is the right link.. for me the second link in the repo worked not the 1st one*
+<br>
 
 
 *2. **Adding the link to the `layout.html` file in the `templates` directory:***
@@ -424,6 +440,7 @@ mkdir media_cdn/profile_images
 ```
 
 *Now the google icons can be used in the project*  
+<br>
 
 
 *3. **Example of the link to the `Home` icon.***
@@ -447,6 +464,7 @@ mkdir media_cdn/profile_images
 **NOTE:**    
 - *To add any other icons simply use the name of the icon in the `<span ..>` tag*  
 - *Complete `<span ..>` tag is available on [Google Icons](https://fonts.google.com/icons) website. When any icon is clicked, there will be a `<span ..>` tag on the right side panel in the `Inserting the icon` section*  
+<br><br>
 
 
 
@@ -464,6 +482,7 @@ python manage.py startapp account
 *This will create a new Django app in the project directory with the directory name `account`*
 
 **NOTE: *If another `app_name` is used, make sure to replace `account` with the `app_name` in the following steps, (where necessary)***
+<br>
 
 
 *2. **Add the app to the installed apps in the `main/settings.py` file***
@@ -483,6 +502,7 @@ INSTALLED_APPS = [
 ]
 ...
 ```
+<br>
 
 
 *3. **Create a Custom User Model***
@@ -569,6 +589,7 @@ class Account(AbstractBaseUser):
 
 **Note**:  
 - *`ImageField` is a part of the `Pillow` library. So, make sure it is installed before running the server.*  
+<br>
 
 
 *4. **Add the custom user model to the `account/admin.py` file:***
@@ -607,6 +628,7 @@ admin.site.unregister(Group)
 ``` 
 
 **NOTE:** *This is needed to be able to view the Custom User Model in the admin page.*
+<br>
 
 
 *5. **Making migrations:***
@@ -639,6 +661,7 @@ python manage.py runserver
 - *now we can login to the admin panel and see the custom user model we created with the fields we specified.*  
 - *user email will be used to login the user and the username will be displayed in the admin page*  
 - *default profile image (stored in the `media_cdn/profile_images` directory) shall be displayed via link in the admin page in the `Change account` --> `Profile Image` section once we click on the account email* 
+<br><br>
 
 
 
@@ -666,6 +689,7 @@ python manage.py runserver
 **NOTE**:  
 - *We dont have yet the profile page nor the login page, so to check if the profile image (default.png) is displayed in the navigation bar, we can login to the admin page and then navigate to `http://localhost:8000`*
 - *This should display the profile image as well as show the username of the user and the link to the current profile image in the browser window*  
+<br><br>
 
 
 
@@ -702,6 +726,8 @@ class CaseInsensitiveModelBackend(ModelBackend):
 			if user.check_password(password) and self.user_can_authenticate(user):
 				return user
 ```
+<br>
+
 
 *2. **Add the custom authentication backend to the `main/settings.py` file:***  
 
@@ -715,6 +741,7 @@ AUTHENTICATION_BACKENDS = [
 ```
 
 *This will allow us to authenticate the user if the email or username is entered in either upper or lower case*  
+<br><br>
 
 
 # REGISTRATION
@@ -761,6 +788,7 @@ AUTHENTICATION_BACKENDS = [
 
 {% endblock content %}
 ```
+<br>
 
 
 *2. **Creating the `RegistrationForm`***
@@ -802,6 +830,7 @@ class RegistrationForm(UserCreationForm):
 ```
 
 *If curious, take a look at the original `UserCreationForm` model on the [Django GitHub](https://github.com/django/django/blob/main/django/contrib/auth/forms.py)*  
+<br>
 
 
 *3. **Adding the `register_view` function.***
@@ -853,6 +882,7 @@ def det_redirect_if_exists(request):
 	return redirect
 
 ```
+<br>
 
 
 *4. **Adding the reference to the `register_view` function in the `main/urls.py` file:***
@@ -867,6 +897,7 @@ urlpatterns = [
 ]
 ...
 ```
+<br>
 
 
 *5. **Adding the link to the registration page.*** 
@@ -889,6 +920,7 @@ urlpatterns = [
 **NOTE**:  
 - *This will allow us to access the registration page at `http://localhost:8000/register` directly from the homepage*  
 - *Also if there is an error pops up when trying to delete the user from the admin page.. this will be fixed later*  
+<br><br>
 
 
 
@@ -933,6 +965,7 @@ urlpatterns = [
 	</div>
 {% endblock content %}
 ```
+<br>
 
 
 *2. **Creating Authentication Form***
@@ -959,6 +992,8 @@ class AccountAuthenticationForm(forms.ModelForm):
 			if not authenticate(email=email, password=password):
 				raise forms.ValidationError('Invalid login')
 ```
+<br>
+
 
 *3. **Adding the `login_view` function***
 
@@ -1013,6 +1048,7 @@ def det_redirect_if_exists(request):
 **NOTE:**  
 - *Make sure the proper imports are added on the top of the file : `from django.contrib.auth import authenticate, login, logout` !*  
 - *Make sure to include the new form : `AccountAuthenticationForm` as well*  
+<br>
 
 
 *4. **Adding the reference to the `login_view` function in the `main/urls.py` file:***
@@ -1028,6 +1064,7 @@ urlpatterns = [
 ]
 ...
 ```
+<br>
 
 
 *5. **Adding the link to the login page.*** 
@@ -1051,6 +1088,7 @@ urlpatterns = [
 ```
 
 *This will allow us to access the login page at `http://localhost:8000/login` directly from the homepage. As well as to show the `Logout` option*
+<br><br>
 
 
 
@@ -1069,6 +1107,7 @@ urlpatterns = [
 ```bash
 mkdir templates/password_reset
 ```
+<br>
 
 
 *2. **Addting several files in the `password_reset` directory:***  
@@ -1180,6 +1219,8 @@ The Open-Chat Team
 ```txt
 PASSWORD RESET
 ```
+<br>
+
 
 *3. **Adding the following urls to the `main/urls.py` file:***
 
@@ -1204,6 +1245,7 @@ urlpatterns = [
 ```
 
 **NOTE**: *Here is the link to [auth views on Django GitHub](https://github.com/django/django/blob/main/django/contrib/auth/views.py) if curious. It contains all indicated above views. This also corresponds to the files we created in the `password_reset` directory*  
+<br>
 
 
 *4. **Adding the necessary settings to the `main/settings.py` file:***
@@ -1222,6 +1264,7 @@ if DEBUG:
 - *The following settings are valid for the development environment !!*
 - *In the production environment, the settings are different. It will be necessary to set up the email server and send the actual email to the user.*
 - *In the development environment, the password reset link will be displayed in the terminal window*  
+<br>
 
 
 *5. **Updating the reference link in the `login.html`***
@@ -1239,6 +1282,7 @@ if DEBUG:
 ```
 
 *This shall be it for the password reset pages. The password reset link will be displayed in the terminal window when the user enters the email address in the password reset form*.  
+<br><br>
 
 
 
@@ -1268,7 +1312,16 @@ if DEBUG:
 {% load static %}
 
 {% block content %}
-<img src="{{ request.user.profile_image.url }}" alt="Profile Image" width="40" height="40">
+
+{% if messages %}
+	{% for message in messages %}
+		<li{% if message.tags %} class="{{ message.tags }}"{% endif %}>
+			{{ message }}
+		</li>
+	{% endfor %}
+{% endif %}
+
+<img src="{{ request.user.profile_image.url }}" alt="Profile Image" width="64" height="64">
 <p>Email</p>
 {%  if is_self %}
 	<h5>{{ email }}</h5>
@@ -1284,64 +1337,98 @@ if DEBUG:
 
 <!-- If Auth user is viewing their own profile -->
 {% if is_self %}
-	<a href="#">Update</a></br>
+	<a href="#">Edit Profile</a></br>
 	<a href="{% url 'password_change' %}">Change password</a></br>
 {% endif %}
 
 {% if request.user.is_authenticated %}
-
-	<!-- THEM to YOU -->
-	{% if request_sent == 0 %}
-	<div>
-		<span>Accept Friend Request</span>
-		<span>cancel</span>
-		<span>check</span>
-	</div>
+	<!-- THEM sent to YOU -->
+	{% if request_sent == 2 %}
+		<a href="#">Accept Friend Request (debug placeholder)</a>
+{% comment %} 
+		<form method="POST" action="{% url 'friends:accept_friend_request' %}">
+			{% csrf_token %}
+			<input type="hidden" name="friend_request_id" value="{{ pending_friend_request_id }}">
+			<input type="submit" value="Accept Friend Request">
+		</form>
+		<form method="POST" action="{% url 'friends:decline_friend_request' %}">
+			{% csrf_token %}
+			<input type="hidden" name="friend_request_id" value="{{ pending_friend_request_id }}">
+			<input type="submit" value="Decline Friend Request">
+		</form>
+{% endcomment %}
+		<a href="#">Decline Friend Request (debug placeholder)</a>
 	{% endif %}
 
 	<!-- Cancel Friend Request / Send Friend Request / Remove Friend -->
 	{% if is_friend == False and is_self == False %}
 		<!-- You sent them a request -->
 		{% if request_sent == 1 %}
-			<button> Cancel Friend Request </button></br>
+			<a href="#">Cancel Friend Request (debug placeholder)</a>
+{% comment %} 
+			<form method="POST" action="{% url 'friends:cancel_friend_request' %}">
+				{% csrf_token %}
+				<input type="hidden" name="friend_request_id" value="{{ pending_friend_request_id }}">
+				<input type="submit" value="Cancel Friend Request">
+			</form>
+{% endcomment %}
 		{% endif %}
+
 		<!-- No requests have been sent -->
-		{% if request_sent == -1 %}
-			<button> Send Friend Request </button></br>
+		{% if request_sent == 0 %}
+			<a href="#">Send Friend Request (debug placeholder)</a>
+{% comment %} 
+			<form method="POST" action="{% url 'friends:send_friend_request' %}">
+				{% csrf_token %}
+				<input type="hidden" name="receiver_id" value="{{ id }}">
+				<input type="submit" value="Send Friend Request">
+			</form>
+{% endcomment %}
 		{% endif %}
 	{% endif %}
 		
 	{% if is_friend %}
-		<button> Friends </button>
-		<a href="#">Unfriend</a>
+		<a href="#">Unfriend (debug placeholder)</a>
+{% comment %} 
+		<form method="POST" action="{% url 'friends:remove_friend' %}">
+			{% csrf_token %}
+			<input type="hidden" name="friend_id" value="{{ id }}">
+			<input type="submit" value="Unfriend">
+		</form>
+{% endcomment %}
 	{% endif %}
 	
-	<!-- TODO -->
-	<!-- Friend list link -->
-	<a href="#">
-		<span> Friends (0) </span></br>
-	</a>
-
-	<!-- TODO -->
-	{#% if friend_requests %#}
+	{% if friend_request %}
 	<!-- Friend requests -->
-		<a href="#">
-			<span> person_add </span></br>
-			<span> Friend Requests (0) </span></br>
+		<a href"#"> Check friend requests sent to you (debug placeholder)</a></br>
+{% comment %} 
+		<a href="{% url 'friends:friend_requests' user_id=id %}">
+			<span> Friend Requests ({{ friend_request|length }}) </span></br>
 		</a>
-	{#% endif %#}
+{% endcomment %}
+	{% endif %}
+
+	<!-- Friend list link --><br>
+	<a href="#">See Friends (debug placeholder)</a></br>
+{% comment %} 
+	<a href="#">
+		<span> Friends ({{ friends|length }}) </span></br>
+	</a>
+{% endcomment %}
 
 	{% if is_friend %}
-		<span> Message </span></br>
+		<a href="#"> Message (debug placeholder)</a></br>
 	{% endif %}
 
 {% endif %}
+	
 {% endblock content %}
-
 ```
 
 **NOTE**:  
-- *Most of the logic in the `profile.html` is not implemented yet. Those are just placeholders for the future functionalities*  
+- *Current `profile.html` page contains commented out code that will be responsible for the friends system logic* 
+- *The logic is not implemented yet. Those are just placeholders for the future functionalities*  
+<br>
 
 
 *2. **Adding the `profile_view` function.***
@@ -1386,6 +1473,10 @@ def profile_view(request, *args, **kwargs):
 	return render(request, 'account/profile.html', content)
 ```
 
+**NOTE**:
+- *This function will be changed significantly in the [FRIENDS SYSTEM - Profile view functionality](#profile-view-functionality) section*  
+<br>
+
 
 *3. **Adding new url file in the `account` app directory named `urls.py`:***
 
@@ -1407,6 +1498,7 @@ urlpatterns = [
 - *`name` attribute is used to reference this URL pattern in the Django templates.*  
 - *`app_name` attribute is used to namespace the URL pattern. This is useful when you have multiple apps in your Django project and you want to avoid naming conflicts between URL patterns.*  
 - *`app_name`: `account` attribute is used in the `main/urls.py` file to include the URL patterns from this file.*  
+<br>
 
 
 *4. **Adding the reference to the account urls in the `main/urls.py` file:***
@@ -1421,6 +1513,7 @@ urlpatterns = [
 	...
 ]
 ```
+<br>
 
 
 *5. **Adding the link to the profile page*** 
@@ -1450,6 +1543,7 @@ urlpatterns = [
 - *`account` is the app name indicated both in the `account/urls.py` as `app_name = 'account'` and in the `main/urls.py` as `namespace='account'`*  
 - *`profile` is the name of the URL pattern we created in the `account/urls.py` file*  
 - *We can access the profile page by clicking on the profile image in the navigation bar, once the user is logged in*  
+<br><br>
 
 
 
@@ -1495,7 +1589,7 @@ urlpatterns = [
 			<p> This is you </p>
 		{% endif %}
 
-	{% if forloop.counter|divisibleby:2 %} <!-- If even.. `forloop.counter` is to access the index -->
+	{% if forloop.counter|divisibleby:2 %} <!-- If even.. `forloop.counter` - to access the index -->
 		<!-- <br> -->
 	{% endif %}
 	
@@ -1507,6 +1601,7 @@ urlpatterns = [
 
 {% endblock content %}
 ```
+<br>
 
 
 *2. **Adding the `account_search_view` function***
@@ -1531,6 +1626,8 @@ def account_search_view(request, *args, **kwargs):
 
 	return render(request, 'account/search_results.html', context)
 ```
+<br>
+
 
 *3. **Adding the reference to the `account_search_view` function***
 
@@ -1548,6 +1645,7 @@ urlpatterns = [
 ```
 
 **NOTE:** *Make sure to add all the necessary imports in the `account/views.py` file.*  
+<br>
 
 
 *4. **Modifying the navbar to show the search bar.***
@@ -1643,12 +1741,13 @@ urlpatterns = [
 ```
 
 *At this point, we can use the search bar in the navigation bar to search for other users by their username or email.*  
+<br><br>
 
 
 
-# EDIT ACCOUNT FUNCTIONALITY
+# EDIT PROFILE FUNCTIONALITY
 
-*This will allow the user to edit their account information, such as the email address, username, and profile image. The user will be able to update their account information in the edit account page*  
+*This will allow the user to edit their profile information, such as the email address, username, and profile image. The user will be able to update their account information in the edit account page*  
 
 *1. **Creating the `edit_profile.html` file***
 
@@ -1663,35 +1762,36 @@ urlpatterns = [
 <div>
 	<img src="{{ form.initial.profile_image.url }}" alt="profile_image" width="128" height="128">
 </div>
-
 <form method="post" enctype="multipart/form-data">
 	{% csrf_token %}
+
 	<input type="file" name="profile_image">
 
+	<h6>Username</h6>
+	<input type="text" name="username" placeholder="Username" required value="{{ form.initial.username }}">
+
 	<h6>Email</h6>
-	<input type="email" name="email" id="id_input_email" placeholder="Email address" required autofocus value={{ form.initial.email }}> 
+	<input type="email" name="email" placeholder="Email address" required autofocus value={{ form.initial.email }}> 
 	<label>
-		<input type="checkbox" name="hide_email" id="id_input_hide_email"
-		{% if form.initial.hide_email %}
-			checked
-		{%endif%}>
+		<input type="checkbox" name="hide_email"
+			{% if form.initial.hide_email %}
+				checked
+			{% endif %}
+		>
 		Hide Email
 	</label>
 
-	<h6 class="mt-4 field-heading">Username</h6>
-	<input type="text" name="username" id="id_input_username" placeholder="Username" required value="{{ form.initial.username }}">
-
 	{% for field in form %}
-	<p>
-		{% for error in field.errors %}
-			<p style="color: red">{{ error }}</p>
-		{% endfor %}
-	</p>
+		<p>
+			{% for error in field.errors %}
+				<p style="color: red">{{ error }}</p>
+			{% endfor %}
+		</p>
 	{% endfor %}
 
 	{% if form.non_field_errors %}
 		<div style="color: red">
-		<p>{{ form.non_field_errors }}</p>
+			<p>{{ form.non_field_errors }}</p>
 		</div>
 
 	{% endif %}
@@ -1702,6 +1802,7 @@ urlpatterns = [
 
 {% endblock content %}
 ```
+<br>
 
 
 *2. **Adding `AccountUpdateForm` class to the `account/forms.py` file:***
@@ -1741,6 +1842,7 @@ class AccountUpdateForm(forms.ModelForm):
 			account.save()
 		return account
 ```
+<br>
 
 
 *3. **Adding the `edit_profile_view` function***
@@ -1799,6 +1901,7 @@ def edit_profile_view(request, *args, **kwargs):
 
 	return render(request, 'account/edit_profile.html', context)
 ``` 
+<br>
 
 
 *4. **Adding a global variable to the `main/settings.py` file:***
@@ -1810,6 +1913,8 @@ def edit_profile_view(request, *args, **kwargs):
 # This is to set a global variable for the maximum size of the uploaded profile image (5MB)
 DATA_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
 ``` 
+<br>
+
 
 *5. **Adding the reference to the `edit_account_view` function***
 
@@ -1825,26 +1930,29 @@ urlpatterns = [
 	path('<user_id>/edit/', edit_profile_view, name='edit'),
 ]
 ```
+<br>
+
 
 *6. **Adding the link to the edit profile page in the `profile.html` file***
 
 *In the `account/templates/account/profile.html` file:*
 
-*..looking for `<a>` tag with `Update` text in it:* 
+*..looking for `<a>` tag with `Update` text in it (should be on line 30 of the `profile.html` given in [PROFILE PAGE](#profile-page) section avove):* 
 
 ```html
 ...
 <!-- If Auth user is viewing their own profile -->
 {% if is_self %}
-	<a href="{% url 'account:edit' user_id=id %}">Update</a></br>
+	<a href="{% url 'account:edit' user_id=id %}">Edit Profile</a></br>
 	...
 {% endif %}
 ...
 ```
 
 **NOTE:**  
-- *This will allow access the edit profile page by clicking on the `Update` link on the profile page*  
+- *This will allow access the edit profile page by clicking on the `Edit Profile` link on the profile page*  
 - *This shall allow us to update the profile image, email address, username.*  
+<br><br>
 
 
 
@@ -1857,6 +1965,8 @@ urlpatterns = [
 ```bash
 python manage.py startapp friends
 ```
+<br>
+
 
 *2. **Adding the `friends` app to the `INSTALLED_APPS` list.***
 
@@ -1870,6 +1980,8 @@ INSTALLED_APPS = [
 ]
 ...
 ```
+<br><br>
+
 
 
 # FRIENDS MODEL
@@ -1954,6 +2066,7 @@ class FriendRequest(models.Model):
 - *`is_active` field will be used to determine if the friend request is active or not.*
 - *If friend request is active, it means that the request has not been accepted or declined yet.*
 - *All requests will be available in the `FriendRequest` table, in database, even if they are declined or canceled.*    
+<br>
 
 
 *2. **Adding `FriendListAdmin` class to the `friends/admin.py` file:***
@@ -1988,6 +2101,7 @@ class FriendRequestAdmin(admin.ModelAdmin):
 
 admin.site.register(FriendRequest, FriendRequestAdmin)
 ```
+<br>
 
 
 *3. **Making migrations and migrating the database:***
@@ -2001,6 +2115,7 @@ python manage.py migrate
 **NOTE:**  
 - *At this point, the `FriendList` and `FriendRequest` models will be created in the database*  
 - *Respective `Friend list` and `Friend requests` sections can be seen on the admin pannel*  
+<br><br>
 
 
 
@@ -2024,6 +2139,16 @@ python manage.py migrate
 4. `is_friend` = `False` = `SENT_BY_YOU` - *..you have sent a friend request to this user*  
 5. `is_friend` = `False` = `THEY_SENT_TO_YOU` - *..this user has sent a friend request to you*  
 
+***The mechanism to handle the requests will be implemented through the Django views and HTML `<form>` tag with `POST` request. The requests will be the following :***
+- *Send friend request*
+- *Cancel friend request*
+- *Accept friend request*
+- *Decline friend request*
+- *Unfriend*
+
+***Placeholder links for these requests shall be already available in the `profile.html` file as commented out sections.***  
+<br><br>
+
 
 
 # PROFILE VIEW FUNCTIONALITY
@@ -2042,6 +2167,7 @@ class FriendRequestStatus(Enum):
 ```
 
 *This will represent the status of the friend request*  
+<br>
 
 
 *2. **Creating a utility function to get the friend request status***
@@ -2059,6 +2185,7 @@ def get_friend_request_or_false(sender, receiver):
 		return False
 
 ```
+<br>
 
 
 *3. **Adding / changing the `profile_view` function***
@@ -2150,7 +2277,9 @@ def profile_view(request, *args, **kwargs):
 ```
 
 **NOTE:**  
-- *At this point, we can not see the changes made on the profile page. Continue with the following section to add respective view functions.*
+- *At this point, profile page shall be visible but no friends system logic is implemented yet*  
+- *We wil be using django views and HTML `<form>` tag with `POST` request to handle the different actions related to the friends system (send friend request, cancel friend request, accept friend request, decline friend request, unfriend)*  
+<br><br>
 
 
 
@@ -2171,9 +2300,11 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 class SendFriendRequestForm(forms.Form):
-	receiver = forms.ModelChoiceField(queryset=User.objects.all())
+	receiver_id = forms.ModelChoiceField(queryset=User.objects.all())
 
 ```
+<br>
+
 
 *2. **Adding respective views***
 
@@ -2202,120 +2333,10 @@ def send_friend_request_view(request):
 		return redirect('account:profile', user_id=request.user.id)
 
 ```
+<br>
 
 
-*3. **Including the forms to the `profile.html` file.***
-
-*In the `account/templates/account/profile.html` file:*  
-
-```html
-{% extends 'layout.html' %}
-{% load static %}
-
-{% block content %}
-
-{% if messages %}
-	{% for message in messages %}
-		<li{% if message.tags %} class="{{ message.tags }}"{% endif %}>
-			{{ message }}
-		</li>
-	{% endfor %}
-{% endif %}
-
-<img src="{{ request.user.profile_image.url }}" alt="Profile Image" width="64" height="64">
-<p>Email</p>
-{%  if is_self %}
-	<h5>{{ email }}</h5>
-{% else %}
-	{% if hide_email %}
-		<h5>**********</h5>
-	{% else %}
-		<h5>{{ email }}</h5>
-	{% endif %}
-{% endif %}
-<p>Username</p>
-<h5>{{ username }}</h5>
-
-<!-- If Auth user is viewing their own profile -->
-{% if is_self %}
-	<a href="{% url 'account:edit' user_id=id %}">Update</a></br>
-	</br>
-	<a href="{% url 'password_change' %}">Change password</a></br>
-{% endif %}
-
-{% if request.user.is_authenticated %}
-
-	<!-- THEM to YOU -->
-	{% if request_sent == 2 %}
-	<div>
-		<span>Accept Friend Request</span>
-		<form method="POST" action="{% url 'friends:accept_friend_request' %}">
-			{% csrf_token %}
-			<input type="hidden" name="friend_request_id" value="{{ pending_friend_request_id }}">
-			<input type="submit" value="Accept">
-		</form>
-		<form method="POST" action="{% url 'friends:decline_friend_request' %}">
-			{% csrf_token %}
-			<input type="hidden" name="friend_request_id" value="{{ pending_friend_request_id }}">
-			<input type="submit" value="Decline">
-		</form>
-	</div>
-	{% endif %}
-
-	<!-- Cancel Friend Request / Send Friend Request / Remove Friend -->
-	{% if is_friend == False and is_self == False %}
-		<!-- You sent them a request -->
-		{% if request_sent == 1 %}
-			<form method="POST" action="{% url 'friends:cancel_friend_request' %}">
-				{% csrf_token %}
-				<input type="hidden" name="friend_request_id" value="{{ pending_friend_request_id }}">
-				<input type="submit" value="Cancel Friend Request">
-			</form>
-		{% endif %}
-
-		<!-- No requests have been sent -->
-		{% if request_sent == 0 %}
-			<form method="POST" action="{% url 'friends:send_friend_request' %}">
-				{% csrf_token %}
-				<input type="hidden" name="receiver_id" value="{{ id }}">
-				<input type="submit" value="Send Friend Request">
-			</form>
-		{% endif %}
-	{% endif %}
-		
-	{% if is_friend %}
-		<button> Friends </button>
-		<form method="POST" action="{% url 'friends:remove_friend' %}">
-			{% csrf_token %}
-			<input type="hidden" name="friend_id" value="{{ id }}">
-			<input type="submit" value="Unfriend">
-		</form>
-	{% endif %}
-	
-	<!-- Friend list link --><br>
-	<a href="{% url 'friends:friend_list' user_id=id %}">
-		<span> Friends ({{ friends|length }}) </span></br>
-	</a>
-	<br>
-
-	{% if friend_request %}
-	<!-- Friend requests -->
-		<a href="{% url 'friends:friend_requests' user_id=id %}">
-			<span> Friend Requests ({{ friend_request|length }}) </span></br>
-		</a>
-	{% endif %}
-
-	<br>
-	{% if is_friend %}
-		<span> Message </span></br>
-	{% endif %}
-
-{% endif %}
-	
-{% endblock content %}
-```
-
-*4. **Creating the `urls.py` file in the `friends` app directory:***
+*3. **Creating the `urls.py` file in the `friends` app directory:***
 
 *In the `friends/urls.py` file:*  
 
@@ -2329,9 +2350,10 @@ urlpatterns = [
 	path('send-friend-request/', views.send_friend_request_view, name='send_friend_request'),
 ]
 ```
+<br>
 
 
-*5. **Adding the reference to the `friends` app in the `main/urls.py` file:***
+*4. **Adding the reference to the `friends` app in the `main/urls.py` file:***
 
 ```python
 ...
@@ -2341,18 +2363,40 @@ urlpatterns = [
 	...
 ]
 ```
+<br>
+
+
+*5. **Activating the respective link in the `profile.html` file:***
+
+*In the `account/templates/account/profile.html` file:*  
+
+```html
+...
+<!-- No requests have been sent -->
+{% if request_sent == 0 %}
+	<form method="POST" action="{% url 'friends:send_friend_request' %}">
+		{% csrf_token %}
+		<input type="hidden" name="receiver_id" value="{{ id }}">
+		<input type="submit" value="Send Friend Request">
+	</form>
+{% endif %}
+...
+```
 
 **NOTE:**  
-- *We can now send friend requests to other users by clicking on the `Send Friend Request` button on the profile page*  
-- *At this point `send_friend_request_view` and `cancel_friend_request_view` functions should be working as expected.*
+- *`name='receiver_id'` must be the same as the field name in the `SendFriendRequestForm` class in the `friends/forms.py` file*  
+- *We can now send friend requests to other users by clicking on the `Send Friend Request` button on the profile page. `send_friend_request_view` functions should be working as expected.*
+<br><br>
 
 
 
-#### ***ADDING FRIEND REQUESTS PAGE***
+# FRIEND REQUESTS PAGE
 
 *This will allow the user to view the friend requests that they have received and accept or decline or cancel the friend requests*  
 
-1. Adding the `friend_requests_view` function to the `friends/views.py` file:
+*1. **Adding the `friend_requests_view` function.***
+
+*In the `friends/views.py` file:*
 
 ```python
 from account.models import Account
@@ -2365,7 +2409,7 @@ def friend_requests_view(request, *args, **kwargs):
 		account = Account.objects.get(pk=user_id)
 		if account == user:
 			friend_requests = FriendRequest.objects.filter(receiver=account, is_active=True)
-			context['friend_requests'] = friend_requests
+			context['friend_requests_count'] = friend_requests
 		else:
 			return HttpResponse("You can't view another user's friend requests.")
 	else:
@@ -2373,8 +2417,12 @@ def friend_requests_view(request, *args, **kwargs):
 	return render(request, 'friends/friend_requests.html', context)
 ...
 ```
+<br>
 
-2. Adding respective url to the `friends/urls.py` file:
+
+*2. **Adding respective url link.***
+
+*In the `friends/urls.py` file:*
 
 ```python
 ...
@@ -2384,8 +2432,12 @@ urlpatterns = [
 	...
 ]
 ```
+<br>
 
-3. Creating the `friend_requests.html` file in the `friends/templates/friends` directory:
+
+*3. **Creating the `friend_requests.html` file.***
+
+*In the `friends/templates/friends/friend_requests.html` file:*  
 
 ```html
 {% extends 'layout.html' %}
@@ -2408,32 +2460,45 @@ urlpatterns = [
 {% endif %}
 	
 {% endblock content %}
-
-
 ```
 
-4. Adding the link to the friend requests page in the `profile.html` file in the `account/templates/account` directory:
+**NOTE:**
+- *`friend_requests_count` shall be the exact same as the variable name in the `friend_requests_view` function, which is passed to the `friend_requests.html` file as `context`*  
+<br>
+
+
+*4. **Adding the link to the friend requests page in the `profile.html`.***
+
+*In the `account/templates/account/profile.html` file: (activating respective block of code)*  
 
 ```html
 ...
-	{% if friend_request %}
-	<!-- Friend requests -->
-		<a href="{% url 'friends:friend_requests' user_id=id %}">
-			<span> person_add </span></br>
-			<span> Friend Requests ({{ friend_request|length }}) </span></br>
-		</a>
-	{% endif %}
+{% if friend_request %}
+<!-- Friend requests -->
+	<a href="{% url 'friends:friend_requests' user_id=id %}">
+		<span> Friend Requests ({{ friend_request|length }}) </span></br>
+	</a>
+{% endif %}
 ...
 ```
 
-*At this point, we can access the friend requests page at `http://localhost:8000/friends/friend-requests/<user_id>/` and view the friend requests that the user has received*  
+**NOTE:**  
+- *At this point, we can access the friend requests page by clicking on the `Friend Requests` link on the profile page, and view the friend requests that the user has received*  
+<br><br>
 
 
-#### ***CANCEL FRIEND REQUEST***
 
-1. Adding the `cancel_friend_request_view` function to the `friends/views.py` file:
+# CANCEL FRIEND REQUEST
+
+*This will allow the user to cancel a friend request that they have sent to another user*  
+
+*1. **Adding the `cancel_friend_request_view` function.***
+
+*In the `friends/views.py` file:*
 
 ```python
+...
+from friends.forms import SendFriendRequestForm, HandleFriendRequestForm
 ...
 def cancel_friend_request_view(request):
 	# DEBUG #
@@ -2448,22 +2513,33 @@ def cancel_friend_request_view(request):
 			return redirect('account:profile', user_id=friend_request_id.receiver.id)
 		else:
 			# print(form.errors)
-			return HttpResponse('Invalid form data.. cancel_friend_request_view')
+			return HttpResponse('Invalid form data.. (Debug: cancel_friend_request_view)')
 	else:
 		messages.error(request, 'Debug: This is a POST-only endpoint')
 		return redirect('account:profile', user_id=request.user.id)
 ...
 ```
 
-2. Adding the `HandleFriendRequestForm` class to the `friends/forms.py` file:
+**NOTE:**  
+- *Dont forget to add `HandleFriendRequestForm` as import : `from friends.forms import SendFriendRequestForm, HandleFriendRequestForm`*
+<br>
+
+
+*2. **Adding the `HandleFriendRequestForm` class.***
+
+*In the `friends/forms.py` file:*
 
 ```python
 ...
 class HandleFriendRequestForm(forms.Form):
 	friend_request_id = forms.ModelChoiceField(queryset=FriendRequest.objects.all())
 ```
+<br>
 
-3. Adding the respective url to the `friends/urls.py` file:
+
+*3. **Adding the respective url to the `friends/urls.py` file.***
+
+*In the `friends/urls.py` file:*
 
 ```python
 ...
@@ -2473,13 +2549,42 @@ urlpatterns = [
 	...
 ]
 ```
+<br>
 
 
-#### ***ACCEPT FRIEND REQUEST***
+*4. **Activating respective functionality in the `profile.html` file.***
 
-1. Adding the `accept_friend_request_view` function to the `friends/views.py` file:
+*In the `account/templates/account/profile.html` file: (activating respective block of code)*  
+
+```html
+...
+<!-- You sent them a request -->
+{% if request_sent == 1 %}
+	<form method="POST" action="{% url 'friends:cancel_friend_request' %}">
+		{% csrf_token %}
+		<input type="hidden" name="friend_request_id" value="{{ pending_friend_request_id }}">
+		<input type="submit" value="Cancel Friend Request">
+	</form>
+{% endif %}
+...
+```
+
+**NOTE:**
+- *`name='friend_request_id'` must be the same as the field name in the `HandleFriendRequestForm` class in the `friends/forms.py` file*  
+<br><br>
+
+
+
+# ACCEPT FRIEND REQUEST
+
+*This will allow the user to accept a friend request that they have received from another user*  
+
+*1. **Adding `accept_friend_request_view` function.***
+
+*In the `friends/views.py` file:*
 
 ```python
+...
 def accept_friend_request_view(request):
 	if request.method == 'POST':
 		form = HandleFriendRequestForm(request.POST)
@@ -2489,14 +2594,18 @@ def accept_friend_request_view(request):
 			messages.success(request, f'You are now friends with {friend_request_id.sender.username}')
 			return redirect('account:profile', user_id=request.user.id)
 		else:
-			return HttpResponse('Invalid form data.. accept_friend_request_view')
+			return HttpResponse('Invalid form data.. (Debug: accept_friend_request_view)')
 	else:
 		messages.error(request, 'Debug: This is a POST-only endpoint')
 		return redirect('account:profile', user_id=request.user.id)
 ...
 ```
+<br>
 
-2. Adding the respective url to the `friends/urls.py` file:
+
+*2. **Adding the respective url link.*** 
+
+*In the `friends/urls.py` file:*
 
 ```python
 ...
@@ -2506,19 +2615,125 @@ urlpatterns = [
 	...
 ]
 ```
+<br>
 
-#### ***REMOVE FRIEND***
+
+*3. **Activating respective functionality in the `profile.html` file.***
+
+*In the `account/templates/account/profile.html` file: (activating respective block of code)*  
+
+```html
+...
+	<!-- THEM sent to YOU -->
+	{% if request_sent == 2 %}
+		<form method="POST" action="{% url 'friends:accept_friend_request' %}">
+			{% csrf_token %}
+			<input type="hidden" name="friend_request_id" value="{{ pending_friend_request_id }}">
+			<input type="submit" value="Accept Friend Request">
+		</form>
+{% comment %} 
+		<form method="POST" action="{% url 'friends:decline_friend_request' %}">
+			{% csrf_token %}
+			<input type="hidden" name="friend_request_id" value="{{ pending_friend_request_id }}">
+			<input type="submit" value="Decline Friend Request">
+		</form>
+{% endcomment %}
+		<a href="#">Decline Friend Request (debug placeholder)</a>
+	{% endif %}
+...
+```
+
+**NOTE:**
+- *`decline_friend_request` link is stil a placeholder, as we have not implemented the decline friend request functionality yet*  
+<br><br>
+
+
+
+# DECLINE FRIEND REQUEST
+
+*This will allow the user to decline a friend request that they have received from another user*  
+
+*1. **Adding the `decline_friend_request_view` function.***
+
+*In the `friends/views.py` file:*
+
+```python
+...
+def decline_friend_request_view(request):
+	user = request.user
+	if not user.is_authenticated:
+		messages.error(request, 'You must be authenticated to decline a friend request')
+		return redirect('login')
+
+	if request.method == 'POST':
+		form = HandleFriendRequestForm(request.POST)
+		if form.is_valid():
+			friend_request_id = form.cleaned_data.get('friend_request_id')
+			friend_request_id.decline()
+			messages.success(request, f'Friend request declined')
+			# return redirect('account:profile', user_id=friend_request_id.sender.id) # Redirect to the profile of the user who sent the request
+			return redirect('account:profile', user_id=request.user.id) # Redirect to the user's profile
+		else:
+			return HttpResponse('Invalid form data.. (Debug: decline_friend_request_view)')
+	else:
+		messages.error(request, 'Debug: This is a POST-only endpoint')
+		return redirect('account:profile', user_id=request.user.id)
+
+```
+<br>
+
+
+*2. **Adding the respective url link.***
+
+*In the `friends/urls.py` file:*
+
+```python
+...
+urlpatterns = [
+	path('decline-friend-request/', views.decline_friend_request_view, name='decline_friend_request'),
+]
+```
+<br>
+
+
+*3. **Activating respective functionality in the `profile.html` file.***
+
+*In the `account/templates/account/profile.html` file: (activating respective block of code)*  
+
+```html
+{% if request_sent == 2 %}
+
+	<form method="POST" action="{% url 'friends:accept_friend_request' %}">
+		{% csrf_token %}
+		<input type="hidden" name="friend_request_id" value="{{ pending_friend_request_id }}">
+		<input type="submit" value="Accept Friend Request">
+	</form>
+
+	<form method="POST" action="{% url 'friends:decline_friend_request' %}">
+		{% csrf_token %}
+		<input type="hidden" name="friend_request_id" value="{{ pending_friend_request_id }}">
+		<input type="submit" value="Decline Friend Request">
+	</form>
+
+{% endif %}
+```
+<br><br>
+
+
+
+# REMOVE FRIEND
 
 *This will allow the user to remove a friend from their friend list*
 
 1. Adding the `remove_friend_view` function to the `friends/views.py` file:
 
 ```python
-...
+# These are all the imports at this point:
 from django.http import HttpResponse
 from django.contrib import messages
-from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render, redirect
+from django.core.exceptions import ObjectDoesNotExist
+
 from friends.forms import SendFriendRequestForm, HandleFriendRequestForm, RemoveFriendForm
 from friends.models import FriendRequest, FriendList
 from account.models import Account
@@ -2557,6 +2772,8 @@ def remove_friend_view(request):
 		return redirect('account:profile', user_id=user.id)
 ...
 ```
+<br>
+
 
 2. Adding the `RemoveFriendForm` class to the `friends/forms.py` file:
 
@@ -2565,6 +2782,8 @@ def remove_friend_view(request):
 class RemoveFriendForm(forms.Form):
 	friend_id = forms.ModelChoiceField(queryset=User.objects.all())
 ```
+<br>
+
 
 3. Adding the respective url to the `friends/urls.py` file:
 
@@ -2576,55 +2795,31 @@ urlpatterns = [
 	...
 ]
 ```
+<br>
 
 
-#### ***DECLINE FRIEND REQUEST***
+*4. **Activating respective functionality in the `profile.html` file.***
 
+*In the `account/templates/account/profile.html` file: (activating respective block of code)*  
 
-1. Adding the `decline_friend_request_view` function to the `friends/views.py` file:
-
-```python
-...
-def decline_friend_request_view(request):
-	user = request.user
-	if not user.is_authenticated:
-		messages.error(request, 'You must be authenticated to decline a friend request')
-		return redirect('login')
-
-	if request.method == 'POST':
-		form = HandleFriendRequestForm(request.POST)
-		if form.is_valid():
-			friend_request_id = form.cleaned_data.get('friend_request_id')
-			friend_request_id.decline()
-			messages.success(request, f'Friend request declined')
-			# return redirect('account:profile', user_id=friend_request_id.sender.id) # Redirect to the profile of the user who sent the request
-			return redirect('account:profile', user_id=request.user.id) # Redirect to the user's profile
-		else:
-			return HttpResponse('Invalid form data.. decline_friend_request_view')
-	else:
-		messages.error(request, 'Debug: This is a POST-only endpoint')
-		return redirect('account:profile', user_id=request.user.id)
-
+```html
+{% if is_friend %}
+	<form method="POST" action="{% url 'friends:remove_friend' %}">
+		{% csrf_token %}
+		<input type="hidden" name="friend_id" value="{{ id }}">
+		<input type="submit" value="Unfriend">
+	</form>
+{% endif %}
 ```
 
-2. Adding the respective url to the `friends/urls.py` file:
-
-```python
-...
-urlpatterns = [
-	path('decline-friend-request/', views.decline_friend_request_view, name='decline_friend_request'),
-]
-```
+**NOTE:**
+- *At this point users can send friend requests, cancel friend requests, accept friend requests, decline friend requests, and remove friends from the friend list*  
+<br>
 
 
-*At this point, hopefully, the users can now send friend requests, cancel friend requests, accept friend requests, decline friend requests, and remove friends from the friend list*
+*5. **`profile.html` file.***
 
-
-#### ***ADDING FRIENDS LIST PAGE***
-
-*This will allow the user to view their friends list and remove friends from the list*
-
-1. Adding the `friend_list.html` file to the `friends/templates/friends` directory:
+*This is how the `account/templates/account/profile.html` file might look like at this point:*  
 
 ```html
 {% extends 'layout.html' %}
@@ -2632,35 +2827,191 @@ urlpatterns = [
 
 {% block content %}
 
+{% if messages %}
+	{% for message in messages %}
+		<li{% if message.tags %} class="{{ message.tags }}"{% endif %}>
+			{{ message }}
+		</li>
+	{% endfor %}
+{% endif %}
+
+<img src="{{ request.user.profile_image.url }}" alt="Profile Image" width="64" height="64">
+<p>Email</p>
+{%  if is_self %}
+	<h5>{{ email }}</h5>
+{% else %}
+	{% if hide_email %}
+		<h5>**********</h5>
+	{% else %}
+		<h5>{{ email }}</h5>
+	{% endif %}
+{% endif %}
+<p>Username</p>
+<h5>{{ username }}</h5>
+
+<!-- If Auth user is viewing their own profile -->
+{% if is_self %}
+	<a href="{% url 'account:edit' user_id=id %}">Edit Profile</a></br>
+	<a href="{% url 'password_change' %}">Change password</a></br>
+{% endif %}
+
+{% if request.user.is_authenticated %}
+	<!-- THEM sent to YOU -->
+	{% if request_sent == 2 %}
+		<form method="POST" action="{% url 'friends:accept_friend_request' %}">
+			{% csrf_token %}
+			<input type="hidden" name="friend_request_id" value="{{ pending_friend_request_id }}">
+			<input type="submit" value="Accept Friend Request">
+		</form>
+		<form method="POST" action="{% url 'friends:decline_friend_request' %}">
+			{% csrf_token %}
+			<input type="hidden" name="friend_request_id" value="{{ pending_friend_request_id }}">
+			<input type="submit" value="Decline Friend Request">
+		</form>
+	{% endif %}
+
+	<!-- Cancel Friend Request / Send Friend Request / Remove Friend -->
+	{% if is_friend == False and is_self == False %}
+		<!-- You sent them a request -->
+		{% if request_sent == 1 %}
+			<form method="POST" action="{% url 'friends:cancel_friend_request' %}">
+				{% csrf_token %}
+				<input type="hidden" name="friend_request_id" value="{{ pending_friend_request_id }}">
+				<input type="submit" value="Cancel Friend Request">
+			</form>
+		{% endif %}
+
+		<!-- No requests have been sent -->
+		{% if request_sent == 0 %}
+			<form method="POST" action="{% url 'friends:send_friend_request' %}">
+				{% csrf_token %}
+				<input type="hidden" name="receiver_id" value="{{ id }}">
+				<input type="submit" value="Send Friend Request">
+			</form>
+		{% endif %}
+	{% endif %}
+		
+	{% if is_friend %}
+		<form method="POST" action="{% url 'friends:remove_friend' %}">
+			{% csrf_token %}
+			<input type="hidden" name="friend_id" value="{{ id }}">
+			<input type="submit" value="Unfriend">
+		</form>
+	{% endif %}
+	
+	{% if friend_request %}
+	<!-- Friend requests -->
+		<a href="{% url 'friends:friend_requests' user_id=id %}">
+			<span> Friend Requests ({{ friend_request|length }}) </span></br>
+		</a>
+	{% endif %}
+
+	<!-- Friend list link --><br>
+	<a href="#">See Friends (debug placeholder)</a></br>
+{% comment %} 
+	<a href="#">
+		<span> Friends ({{ friends|length }}) </span></br>
+	</a>
+{% endcomment %}
+
+	{% if is_friend %}
+		<a href="#"> Message (debug placeholder)</a></br>
+	{% endif %}
+
+{% endif %}
+	
+{% endblock content %}
+```
+<br><br>
+
+
+
+# ADDING FRIENDS LIST PAGE
+
+*This will allow the user to view their friends list.*
+
+*1. **Adding the `friend_list.html` file.***
+
+*In the `friends/templates/friends/friend_list.html` file:*
+
+```html
+<style>
+	/* Style for the friend list, example */
+	.friend-card {
+		border: 1px solid #ccc;
+		border-radius: 8px;
+		padding: 16px;
+		margin: 16px 0;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+		display: flex;
+		align-items: center;
+	}
+
+	.friend-card img {
+		border-radius: 50%;
+		margin-right: 16px;
+		width: 50px;
+		height: 50px;
+	}
+
+	.friend-card h4 {
+		margin: 0;
+		font-size: 1.2em;
+	}
+
+	.friend-card p {
+		margin: 8px 0 0;
+		font-size: 0.9em;
+		color: #666;
+	}
+
+	.friend-card a {
+		text-decoration: none;
+		color: #007bff;
+	}
+
+	.friend-card a:hover {
+		text-decoration: underline;
+	}
+</style>
+
+{% extends 'layout.html' %}
+{% load static %}
+
+{% block content %}
+
 {% if friends %}
 	{% for friend in friends %}
-		<a href="{% url 'account:profile' user_id=friend.0.pk %}">
-			<img src="{{ friend.0.profile_image.url }}" alt="profile_image">
-		</a>
-		
-		<a href="{% url 'account:profile' user_id=friend.0.pk %}">
-			<h4>{{ friend.0.username|truncatechars:50 }}</h4>
-		</a>
-
-		{% if friend.1 %}
-			<a href="#">Send a Message</a>
-		{% endif %}
+		<div class="friend-card">
+			<a href="{% url 'account:profile' user_id=friend.0.pk %}">
+				<img src="{{ friend.0.profile_image.url }}" alt="profile_image">
+			</a>
 			
-		{% if friend.1 %}
-			<p> FRIENDS </p>
-			<span> check_circle_outline </span>
-		{% else %}
-			{% if friend.0 !=  request.user %}
-				<p> Not Friends </p>
-				<span>cancel</span>
-			{% endif %}
-		{% endif %}
+			<div>
+				<a href="{% url 'account:profile' user_id=friend.0.pk %}">
+					<h4>{{ friend.0.username|truncatechars:50 }}</h4>
+				</a>
 
-		{% if friend.0 == request.user %}
-				<p> This is you </p>
-				<span> person_pin </span>
-		{% endif %}
+				{% if friend.1 %}
+					<a href="#">Send a Message (debug.. future functionality..)</a>
+				{% endif %}
+					
+				{% if friend.1 %}
+					<p> FRIENDS </p>
+					<span> check_their_friends (Debug.. placeholder) </span></br>
+				{% else %}
+					{% if friend.0 !=  request.user %}
+						<p> Not Friends </p>
+						<span>cancel (debug.. placeholder)</span></br>
+					{% endif %}
+				{% endif %}
 
+				{% if friend.0 == request.user %}
+					<p> This is you </p>
+					<span> person_pin (debug.. placeholder) </span></br>
+				{% endif %}
+			</div>
+		</div>
 	{% endfor %}
 	
 {% else %} <!-- If no friends -->
@@ -2670,7 +3021,15 @@ urlpatterns = [
 {% endblock content %}
 ```
 
-2. Adding the `friends_list_view` function to the `friends/views.py` file:
+**NOTE:**
+- *This is the example of how the `friend_list.html` file might look like.*
+- *The style is also an example, which shall be replaced by the Bootstrap in the frontend module.*
+<br>
+
+
+*2. **Adding the `friends_list_view` function.***
+
+*In the `friends/views.py` file:*
 
 ```python
 ...
@@ -2710,8 +3069,12 @@ def friend_list_view(request, *args, **kwargs):
 
 	return render(request, 'friends/friend_list.html', context)
 ```
+<br>
 
-3. Adding the respective url to the `friends/urls.py` file:
+
+*3. **Adding the respective url link.***
+
+*In the `friends/urls.py` file:*
 
 ```python
 ...
@@ -2721,23 +3084,36 @@ urlpatterns = [
 	...
 ]
 ```
+<br>
 
-4. Adding the link to the friend list page in the `profile.html` file in the `account/templates/account` directory:
+
+*4. **Adding the link to the friend list page in the `profile.html`.***
+
+*In the `account/templates/account/profile.html` file: (activating respective block of code)*
 
 ```html
 ...
-	<!-- Friend list link -->
-	<a href="{% url 'friends:friend_list' user_id=id %}">
-		<span> Friends ({{ friends|length }}) </span></br>
-	</a>
+<!-- Friend list link --><br>
+<a href="{% url 'friends:friend_list' user_id=id %}">
+	<span> Friends ({{ friends|length }}) </span></br>
+</a>
 ...
 ```
 
-*At this point, the user can view their friends list at `http://localhost:8000/friends/friend-list/<user_id>/` and remove friends from the list*
+**NOTE:**
+- *At this point, the user can view their friends list by clicking on the `Friends` link on their profile page*  
+<br><br>
 
-5. Modifying the `account/account_search_view` function in the `account/views.py` file:
+
+
+# UPDATING SEARCH RESULTS VIEW 
 
 *This will allow the user to see the friend status of the search results in the search results page*  
+<br>
+
+*1. **Modifying the `account/account_search_view` function.***
+
+*In the `account/views.py` file:*
 
 ```python
 ...
@@ -2765,7 +3141,97 @@ def account_search_view(request, *args, **kwargs):
 	return render(request, 'account/search_results.html', context)
 ...
 ```
+<br>
 
-**This shall conclude the friends system. The user can now send friend requests, cancel friend requests, accept friend requests, decline friend requests, remove friends from the friend list, and view their friends list**  
 
+*2. **Modifying the `search_results.html` file.***
+
+*Adding basic styling to view the search results better*
+
+*In the `account/templates/account/search_results.html` file:*
+
+```html
+{% extends 'layout.html' %}
+{% load static %}
+
+{% block content %}
+
+<style>
+	.card {
+		border: 1px solid #ccc;
+		border-radius: 8px;
+		padding: 16px;
+		margin: 16px 0;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	}
+	.card img {
+		max-width: 100px;
+		border-radius: 50%;
+	}
+	.card h4 {
+		margin: 8px 0;
+	}
+	.card p {
+		margin: 4px 0;
+	}
+	.card a {
+		text-decoration: none;
+		color: #007bff;
+	}
+	.card a:hover {
+		text-decoration: underline;
+	}
+</style>
+
+{% if accounts %}
+
+	{% for account in accounts %}
+		<div class="card">
+			<a href="{% url 'account:profile' user_id=account.0.id %}">
+				<img src="{{ account.0.profile_image.url }}" alt="profile_image">
+			</a>
+
+			<a href="{% url 'account:profile' user_id=account.0.id %}">
+				<h4>{{ account.0.username }}</h4>
+				{% if account.1 %}
+					<a href="#">Send a Message (debug.. future functionality)</a>
+				{% endif %}
+			</a>
+
+			{% if account.1 %} <!-- If friends -->
+				<p> Friends </p>
+			{% else %}
+				{% if account.0 != request.user %} <!-- If not friends -->
+					<p> Not Friends </p>
+				{% endif %}
+			{% endif %}
+
+			{% if account.0 == request.user %} <!-- If you -->
+				<p> This is you </p>
+			{% endif %}
+		</div>
+	{% endfor %}
+	
+{% else %} <!-- If no friends -->
+	<p> No results </p>
+{% endif %}
+
+{% endblock content %}
+```
+
+**NOTE:**
+- *At this point, the user can view the friend status of the search results in the search results page*
+- *The search results page will show the users who match the search query, and the friend status of each user*
+- *The styling is an example, which shall be replaced by the Bootstrap in the frontend module*
+<br><br>
+
+***This shall conclude the `User Management Module` with friends system implementation.***  
+***The user can now:***
+- *send friend requests*
+- *cancel friend requests* 
+- *accept friend requests*
+- *decline friend requests*
+- *remove friends from the friend list*
+- *view their friends list*  
+- *search for other users and view their friend status*  
 
