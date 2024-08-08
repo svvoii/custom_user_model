@@ -1,22 +1,38 @@
 # USER MANAGEMENT SYSTEM
 
-This repository contains the code for the tutorial on how to create a custom user model in Django. The tutorial covers the following topics:
+**This is a guided tutorial on how to create a custom user model in Django, set up user profile functionality and implement friends system.**  
 
-- Creating a new Django project
-- Adding a new apps to the project
-- Creating templates
-- Adding and referencing static files
-- Adding default profile image
-- Building a custom user model
-- Handling case-insensitive input with backends model
-- Custom forms for registration and login pages
-- Password reset functionality
-- Profile page with personal info update functionality
-<br><br>
+Tutorial is divided into several following sections:  
+
+[01. Creating a new Django project](#creating-new-django-project)  
+[02. Referencing static files](#referencing-static-files)  
+[03. Using static images](#using-static-images)  
+[04. Building custom user model](#building-custom-user-model)  
+[05. Setting up profile image](#setting-up-profile-image)  
+[06. Handling case-insensitive input](#handling-case-insensitive-input)  
+[07. User Registration](#user-registration)  
+[08. Login and Logout](#login-and-logout)  
+[09. Password reset](#password-reset)  
+[10. Profile page](#profile-page)  
+[11. User search](#user-search)  
+[12. Edit profile](#edit-profile-functionality)  
+[13. Implementing friends system](#implementing-friends-system)  
+[14. Friends model](#friends-model)  
+[15. Friends system structure and logic](#friends-system-structure-and-logic)   
+[16. Profile view functionality](#profile-view-functionality)  
+[17. Sending friend request](#sending-friend-request)  
+[18. Friend requests page](#friend-requests-page)  
+[19. Cancel friend request](#cancel-friend-request)  
+[20. Accept friend request](#accept-friend-request)  
+[21. Decline friend request](#decline-friend-request)  
+[22. Remove friend](#remove-friend)  
+[23. Friends list page](#adding-friends-list-page)  
+[24. Search results, update](#updating-search-results-view)  
+
+<br>
 
 **NOTE:** 
-- *Some functionas and code snippets in this README file might not be the same as in the files in this repository.*
-- *The code in this README file is updated and tested, reproduced in a new Django project.*
+- *This is follow-along tutorial, so the code in this README file is complete and tested (reproduced in a new Django project).*
 
 <br><br>
 
@@ -26,25 +42,6 @@ This repository contains the code for the tutorial on how to create a custom use
 # CREATING NEW DJANGO PROJECT
 
 *Assuming `python` and `pipenv` are installed.*
-
-## To run the project from this repository:
-
-*If you want to run the project from this repository, follow the steps below to set up the environment and run the server*  
-
-*1. Clone the repo and install the dependencies.*
-
-```bash
-pipenv install requirements.txt
-```
-
-*2. Run the server*
-
-```bash
-python manage.py runserver
-```
-
-
-## To follow along this tutorial:
 
 *1. **Creating new directory for the project and install Django with pipenv***
 
@@ -70,12 +67,6 @@ django-admin startproject main .
 ```
 *This will create a new Django project in the current directory with the name `main`*  
 
-
-**NOTE**: *The following command can be used at any point or whenever additional packages are installed to save the requirements of the project to a file named `requirements.txt`. This helps to track the dependencies of the project as well as to install the same dependencies at once in a new environment*
-
-```bash
-pip freeze > requirements.txt
-```
 <br>
 
 
@@ -335,7 +326,10 @@ mkdir media
 mkdir media_cdn
 ```
 
-**NOTE** *`static_cdn` and `media_cdn` directories are an example of the directories where the static and media files will be stored when the project is deployed. `_cdn` directories are created once the following command is run in the production environment:*  
+**NOTE:**  
+- *`static_cdn` and `media_cdn` directories are an example of the directories where the static and media files will be stored when the project is deployed.*
+- *`_cdn` directories are created once the following command `python manage.py collectstatic` is run.*
+- *stylesheets, images, javascript files etc. shall be stored in the `static` and `media` directories.*    
 
 ```bash
 python manage.py collectstatic
@@ -751,7 +745,7 @@ AUTHENTICATION_BACKENDS = [
 <br><br>
 
 
-# REGISTRATION
+# USER REGISTRATION
 
 ## Adding Registration Page
 
