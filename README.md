@@ -1993,7 +1993,7 @@ INSTALLED_APPS = [
 
 # FRIENDS MODEL
 
-*1. **Creating the `models.py` file in the `friends` app directory.***
+*1. **Creating mew model in the `models.py` file in the `friends` app directory.***
 
 *Here we will create the `FriendList` model to store the friends of the user, the `FriendRequest` model to store the friend requests.*  
 
@@ -2134,7 +2134,7 @@ python manage.py migrate
 `False`: *..user is viewing the profile page of another user*    
 --> if `is_friend`:  
 `True`: *..user is viewing the profile page of a friend*  
-`False`: *..user is not viewing the profile page of a NON-friend*   
+`False`: *..user is viewing the profile page of a NON-friend*   
 - `NO_REQUEST_SENT`: *..no friend request has been sent to this user*
 - `SENT_BY_YOU`: *..you have sent a friend request to this user*  
 - `THEY_SENT_TO_YOU`: *..this user has sent a friend request to you*  
@@ -2182,7 +2182,7 @@ class FriendRequestStatus(Enum):
 *Creating new file `friends/utils.py` with the following function:*  
 
 ```python
-from frineds.models import FriendRequest
+from friends.models import FriendRequest
 
 def get_friend_request_or_false(sender, receiver):
 	try:
@@ -2443,6 +2443,8 @@ urlpatterns = [
 
 
 *3. **Creating the `friend_requests.html` file.***
+
+*First creating respective directories `friends/templates/friends`.*  
 
 *In the `friends/templates/friends/friend_requests.html` file:*  
 
